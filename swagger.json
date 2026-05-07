@@ -1,0 +1,208 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Portal Academy API",
+    "version": "1.0.0",
+    "description": "RESTful API for Portal Academy School Management System (Group 15)"
+  },
+  "servers": [
+    { "url": "http://localhost:5000/api", "description": "Local Dev Server" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register a new user",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "firstName": "John",
+                "lastName": "Doe",
+                "email": "john@school.com",
+                "password": "password123",
+                "role": "student"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User registered successfully" },
+          "400": { "description": "Email already in use" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login and receive JWT token",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": { "email": "john@school.com", "password": "password123" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login successful, returns JWT" },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get current user profile",
+        "responses": { "200": { "description": "Current user data" } }
+      }
+    },
+    "/students": {
+      "get": {
+        "tags": ["Students"],
+        "summary": "Get all students (Admin/Teacher only)",
+        "responses": { "200": { "description": "List of students" } }
+      }
+    },
+    "/students/{id}": {
+      "get": {
+        "tags": ["Students"],
+        "summary": "Get a single student",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Student data" }, "404": { "description": "Not found" } }
+      },
+      "put": {
+        "tags": ["Students"],
+        "summary": "Update student (Admin only)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Updated student" } }
+      },
+      "delete": {
+        "tags": ["Students"],
+        "summary": "Delete student (Admin only)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Deleted" } }
+      }
+    },
+    "/courses": {
+      "get": {
+        "tags": ["Courses"],
+        "summary": "Get all active courses",
+        "responses": { "200": { "description": "List of courses" } }
+      },
+      "post": {
+        "tags": ["Courses"],
+        "summary": "Create a course (Admin only)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "title": "Mathematics",
+                "courseCode": "MTH101",
+                "semester": "first",
+                "academicYear": "2024/2025"
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Course created" } }
+      }
+    },
+    "/courses/{id}/enroll": {
+      "post": {
+        "tags": ["Courses"],
+        "summary": "Enroll a student in a course (Admin only)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": {
+            "application/json": { "example": { "studentId": "64abc123..." } }
+          }
+        },
+        "responses": { "200": { "description": "Student enrolled" } }
+      }
+    },
+    "/grades": {
+      "post": {
+        "tags": ["Grades"],
+        "summary": "Record student grades (Teacher/Admin)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "student": "64abc...",
+                "course": "64def...",
+                "scores": { "assignment": 25, "midterm": 22, "exam": 35 },
+                "semester": "first",
+                "academicYear": "2024/2025"
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Grade recorded" } }
+      }
+    },
+    "/grades/student/{studentId}": {
+      "get": {
+        "tags": ["Grades"],
+        "summary": "Get all grades for a student + GPA",
+        "parameters": [{ "name": "studentId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Grades and GPA" } }
+      }
+    },
+    "/attendance": {
+      "post": {
+        "tags": ["Attendance"],
+        "summary": "Mark attendance (Teacher/Admin)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "course": "64abc...",
+                "student": "64def...",
+                "status": "present",
+                "date": "2024-11-01"
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Attendance recorded" } }
+      }
+    },
+    "/announcements": {
+      "get": {
+        "tags": ["Announcements"],
+        "summary": "Get all published announcements",
+        "responses": { "200": { "description": "List of announcements" } }
+      },
+      "post": {
+        "tags": ["Announcements"],
+        "summary": "Post an announcement (Admin/Teacher)",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "example": {
+                "title": "Exam Timetable Released",
+                "content": "The exam timetable for semester 1 is now available.",
+                "targetAudience": "students"
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Announcement posted" } }
+      }
+    }
+  }
+}
