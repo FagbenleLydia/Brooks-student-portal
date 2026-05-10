@@ -9,10 +9,10 @@ exports.bootstrap = async (req, res) => {
 
     try {
         const defaultAdmin = await User.create({
-            firstName: process.env.DEFAULT_FRISTNAME,
-            lastName: DEFAULT_LASTNAME,
-            email: DEFAULT_EMAIL,
-            password: DEFAULT_PASSWORD,
+            firstName: process.env.DEFAULT_FIRSTNAME,
+            lastName: process.env.DEFAULT_LASTNAME,
+            email: process.env.DEFAULT_EMAIL,
+            password: process.env.DEFAULT_PASSWORD,
             role: 'admin'
         });
 

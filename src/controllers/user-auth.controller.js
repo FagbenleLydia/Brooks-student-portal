@@ -16,19 +16,19 @@ exports.register = async (req, res) => {
         session.startTransaction();
 
         //create new user
-        const user = await User.create({
+        const user = await User.create([{
             firstName,
             lastName,
             email,
             password,
             role
-        }, { session });
+        }], { session });
 
         //define replacements for email templates
         const replacements = {
-            name: `${user.firstName} ${user.lastName}`,
-            role: user.role.toUpperCase(),
-            authUserId: user.authUserId
+            name: `${user[0].firstName} ${user[0].lastName}`,
+            role: user[0].role.toUpperCase(),
+            authUserId: user[0].authUserId
         }
 
         //load template
@@ -95,7 +95,7 @@ exports.login = async (req, res) => {
 
 exports.profile = async(req, res) => {
     try {
-        const { email } = req.user.email;
+        const { email } = req.user;
 
         //find user
         const user = await User.findOne({ email });
