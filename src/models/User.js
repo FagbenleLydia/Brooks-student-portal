@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
     },
     authUserId: { type: String, unique: true, trim: true },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 //Password hashing

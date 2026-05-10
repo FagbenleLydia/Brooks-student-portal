@@ -14,7 +14,7 @@ const courseSchema = new mongoose.Schema(
     enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     isActive: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 module.exports = mongoose.model('Course', courseSchema);
