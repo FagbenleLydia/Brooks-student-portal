@@ -7,6 +7,6 @@ const { validateRegister, validateLogin } = require('../middlewares/validate.mid
 
 router.post('/register', validateRegister, register);
 router.post('/sign-in', validateLogin, login);
-router.get('/me', protect, authorize('admin', 'teacher', 'student', 'parent'), profile);
+router.get('/me', protect, profile);
 
 module.exports = router;
