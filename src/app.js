@@ -4,6 +4,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("../swagger.json");
+const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
 
@@ -35,5 +36,7 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
+
+app.use(errorHandler);
 
 module.exports = { app, connectDB };
