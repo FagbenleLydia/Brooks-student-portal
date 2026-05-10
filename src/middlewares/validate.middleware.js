@@ -8,7 +8,7 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
-const validateRegister = [
+const validateCreateUser = [
   body('firstName').trim().notEmpty().withMessage('First name is required'),
   body('lastName').trim().notEmpty().withMessage('Last name is required'),
   body('email').isEmail().withMessage('Please provide a valid email'),
@@ -16,6 +16,18 @@ const validateRegister = [
   body('role')
     .optional()
     .isIn(['admin', 'teacher', 'student', 'parent'])
+    .withMessage('Invalid role'),
+  handleValidationErrors,
+];
+
+const validateRegister = [
+  body('firstName').trim().notEmpty().withMessage('First name is required'),
+  body('lastName').trim().notEmpty().withMessage('Last name is required'),
+  body('email').isEmail().withMessage('Please provide a valid email'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
+  body('role')
+    .optional()
+    .isIn(['teacher', 'student', 'parent'])
     .withMessage('Invalid role'),
   handleValidationErrors,
 ];
@@ -64,6 +76,7 @@ const validateAnnouncement = [
 ];
 
 module.exports = {
+  validateCreateUser,
   validateRegister,
   validateLogin,
   validateGrade,
