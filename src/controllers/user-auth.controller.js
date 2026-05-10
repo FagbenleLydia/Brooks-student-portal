@@ -35,7 +35,7 @@ exports.register = async (req, res) => {
         const html = loadEmailTemplate('onboarding', replacements);
 
         //send email
-        await sendEmail(user.email, 'WELCOME TO BROOKS STUDENT PROTAL', html);
+        await sendEmail(user[0].email, 'WELCOME TO BROOKS STUDENT PROTAL', html);
 
         //commit session
         await session.commitTransaction();
@@ -60,10 +60,12 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { emailOrAuthId, password } = req.body;
 
         //check if existing user
-        const existingUser = await User.findOne({ email: email });
+        const existingUser = await User.findOne({
+            $or: [{ email: emailOrAuthId }, { authUserId: emailOrAuthId }]
+        }).select('+password');
 
         if(!existingUser) {
             return res.status(404).json({ message: 'User not found' });

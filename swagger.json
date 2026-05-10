@@ -91,7 +91,7 @@
           "required": true,
           "content": {
             "application/json": {
-              "example": { "email": "john@school.com", "password": "password123" }
+              "example": { "emailOrAuthId": "john@school.com or STU-001", "password": "password123" }
             }
           }
         },

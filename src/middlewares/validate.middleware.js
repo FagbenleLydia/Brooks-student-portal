@@ -21,7 +21,7 @@ const validateRegister = [
 ];
 
 const validateLogin = [
-  body('email').isEmail().withMessage('Please provide a valid email'),
+  body('emailOrAuthId').notEmpty().withMessage('Please provide a valid email'),
   body('password').notEmpty().withMessage('Password is required'),
   handleValidationErrors,
 ];
