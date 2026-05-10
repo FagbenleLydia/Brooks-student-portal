@@ -19,7 +19,8 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Routes
 // Register your routes here as you build them
-// e.g. app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/auth/admin', require('./routes/admin-auth.routes'));
+app.use('/api/auth/user', require('./routes/user-auth.routes'));
 
 // Health Check
 app.get("/", (req, res) => {
