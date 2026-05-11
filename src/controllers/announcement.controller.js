@@ -1,6 +1,6 @@
 const Announcement = require('../models/Announcement');
 
-// Roles that can see which audience buckets
+// Roles that can see which audience 
 const audienceMap = {
   student: ['students', 'all'],
   teacher: ['teachers', 'all'],
