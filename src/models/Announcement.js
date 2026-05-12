@@ -12,7 +12,7 @@ const announcementSchema = new mongoose.Schema(
     postedBy:    { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     isPublished: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 module.exports = mongoose.model('Announcement', announcementSchema);

@@ -8,7 +8,7 @@ const studentSchema = new mongoose.Schema(
     enrollmentYear: { type: Number, required: true },
     isActive: { type: Boolean, default: true },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 module.exports = mongoose.model('Student', studentSchema);

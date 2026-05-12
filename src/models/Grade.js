@@ -23,7 +23,7 @@ const gradeSchema = new mongoose.Schema(
     semester:     { type: String, enum: ['first', 'second'], required: true },
     academicYear: { type: String, required: true, trim: true },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 gradeSchema.pre('save', function (next) {

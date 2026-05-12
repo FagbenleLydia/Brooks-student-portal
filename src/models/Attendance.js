@@ -11,7 +11,7 @@ const attendanceSchema = new mongoose.Schema(
     },
     date: { type: Date, required: true },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
 // One attendance record per student per course per day

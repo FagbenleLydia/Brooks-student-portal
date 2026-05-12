@@ -4,10 +4,14 @@ const cors = require("cors");
 const morgan = require("morgan");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("../swagger.json");
+<<<<<<< HEAD
 const departmentRoutes = require("./modules/departments/department.routes");
 const facultyRoutes = require("./modules/faculties/faculty.routes");
 const studentRoutes = require("./modules/students/student.routes");
 const courseRoutes = require("./modules/course/course.routes");
+=======
+const errorHandler = require('./middlewares/errorHandler');
+>>>>>>> d2c8339c165ccee50aaa7a355c8dd75603d01ead
 
 const app = express();
 
@@ -25,8 +29,16 @@ app.use("/api/students", studentRoutes);
 app.use("/api/courses", courseRoutes);
 
 // Routes
+<<<<<<< HEAD
 // All module routes registered above
 // e.g. app.use('/api/auth', require('./routes/auth.routes'));
+=======
+app.use('/api/auth/admin', require('./routes/admin-auth.routes'));
+app.use('/api/auth/user', require('./routes/user-auth.routes'));
+app.use('/api/announcements', require('./routes/announcement.routes'));
+app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/students', require('./routes/student.routes'));
+>>>>>>> d2c8339c165ccee50aaa7a355c8dd75603d01ead
 
 // Health Check
 app.get("/", (req, res) => {
@@ -43,5 +55,7 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
+
+app.use(errorHandler);
 
 module.exports = { app, connectDB };

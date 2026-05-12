@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Portal Academy API",
+    "title": "Brooks Student Portal API",
     "version": "1.0.0",
-    "description": "RESTful API for Portal Academy School Management System (Group 15)"
+    "description": "RESTful API for Brooks Student Portal School Management System"
   },
   "servers": [
     { "url": "http://localhost:5000/api", "description": "Local Dev Server" }
@@ -19,10 +19,48 @@
   },
   "security": [{ "bearerAuth": [] }],
   "paths": {
-    "/auth/register": {
+    "/auth/admin/admin-bootstrap": {
       "post": {
-        "tags": ["Auth"],
-        "summary": "Register a new user",
+        "tags": ["Admin Auth"],
+        "summary": "Provision the initial system Admin",
+        "description": "Checks if an admin exists; if not, creates one using environment variables.",
+        "security": [],
+        "responses": {
+          "201": { "description": "Default Admin Created" },
+          "409": { "description": "Admin already exists" }
+        }
+      }
+    },
+    "/auth/admin/create-user": {
+      "post": {
+        "tags": ["Admin Auth"],
+        "summary": "Admin-led user creation",
+        "description": "Allows an authenticated admin to manually register teachers, students, or parents.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "firstName": "Jane",
+                "lastName": "Smith",
+                "email": "jane@school.com",
+                "password": "password123",
+                "role": "teacher"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User created successfully" },
+          "403": { "description": "Forbidden - Admin access required" }
+        }
+      }
+    },
+    "/auth/user/register": {
+      "post": {
+        "tags": ["User Auth"],
+        "summary": "Public student/user registration",
+        "description": "Triggers the transaction-based registration, ID generation, and welcome email.",
         "security": [],
         "requestBody": {
           "required": true,
@@ -39,42 +77,40 @@
           }
         },
         "responses": {
-          "201": { "description": "User registered successfully" },
-          "400": { "description": "Email already in use" }
+          "201": { "description": "User registered and email sent" },
+          "500": { "description": "Internal server error / Transaction failed" }
         }
       }
     },
-    "/auth/login": {
+    "/auth/user/sign-in": {
       "post": {
-        "tags": ["Auth"],
-        "summary": "Login and receive JWT token",
+        "tags": ["User Auth"],
+        "summary": "User Login",
         "security": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
-              "example": { "email": "john@school.com", "password": "password123" }
+              "example": { "emailOrAuthId": "john@school.com or STU-001", "password": "password123" }
             }
           }
         },
         "responses": {
-          "200": { "description": "Login successful, returns JWT" },
-          "401": { "description": "Invalid credentials" }
+          "200": { "description": "Login successful, returns JWT and user data" },
+          "401": { "description": "Invalid credentials" },
+          "404": { "description": "User not found" }
         }
       }
     },
-    "/auth/me": {
+    "/auth/user/me": {
       "get": {
-        "tags": ["Auth"],
-        "summary": "Get current user profile",
-        "responses": { "200": { "description": "Current user data" } }
-      }
-    },
-    "/students": {
-      "get": {
-        "tags": ["Students"],
-        "summary": "Get all students (Admin/Teacher only)",
-        "responses": { "200": { "description": "List of students" } }
+        "tags": ["User Auth"],
+        "summary": "Get my profile",
+        "description": "Retrieves the profile of the currently logged-in user via JWT.",
+        "responses": {
+          "200": { "description": "Profile data retrieved" },
+          "401": { "description": "Not authorized" }
+        }
       }
     },
     "/students/{id}": {
