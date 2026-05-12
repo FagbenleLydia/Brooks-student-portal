@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const User = require('../models/user');
 const { loadEmailTemplate } = require('../utils/emailTemplate');
 const { sendEmail } = require('../utils/mailer');
 
@@ -35,7 +35,7 @@ exports.register = async (req, res) => {
         const html = loadEmailTemplate('onboarding', replacements);
 
         //send email
-        await sendEmail(user[0].email, 'WELCOME TO BROOKS STUDENT PROTAL', html);
+        //await sendEmail(user[0].email, 'WELCOME TO BROOKS STUDENT PROTAL', html);
 
         //commit session
         await session.commitTransaction();
