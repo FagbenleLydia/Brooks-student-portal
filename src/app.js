@@ -4,6 +4,10 @@ const cors = require("cors");
 const morgan = require("morgan");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("../swagger.json");
+const departmentRoutes = require("./modules/departments/department.routes");
+const facultyRoutes = require("./modules/faculties/faculty.routes");
+const studentRoutes = require("./modules/students/student.routes");
+const courseRoutes = require("./modules/course/course.routes");
 
 const app = express();
 
@@ -15,9 +19,13 @@ app.use(morgan("dev"));
 
 // API Docs
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use("/api/departments", departmentRoutes);
+app.use("/api/faculties", facultyRoutes);
+app.use("/api/students", studentRoutes);
+app.use("/api/courses", courseRoutes);
 
 // Routes
-// Register your routes here as you build them
+// All module routes registered above
 // e.g. app.use('/api/auth', require('./routes/auth.routes'));
 
 // Health Check

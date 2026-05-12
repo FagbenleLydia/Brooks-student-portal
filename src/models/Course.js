@@ -4,6 +4,7 @@ const courseSchema = new mongoose.Schema(
   {
     title:      { type: String, required: true, trim: true },
     courseCode: { type: String, required: true, unique: true, uppercase: true, trim: true },
+    department: { type: mongoose.Schema.Types.ObjectId, ref: 'Department', required: true },
     semester: {
       type: String,
       enum: ['first', 'second'],
