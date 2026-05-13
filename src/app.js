@@ -22,6 +22,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use('/api/auth/admin', require('./routes/admin-auth.routes'));
 app.use('/api/auth/user', require('./routes/user-auth.routes'));
 app.use('/api/announcements', require('./routes/announcement.routes'));
+app.use('/api/result', require('./routes/resultRoute'));
 
 // Health Check
 app.get("/", (req, res) => {
