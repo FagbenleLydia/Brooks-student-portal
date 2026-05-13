@@ -4,7 +4,14 @@ const cors = require("cors");
 const morgan = require("morgan");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("../swagger.json");
+<<<<<<< HEAD
+const departmentRoutes = require("./modules/departments/department.routes");
+const facultyRoutes = require("./modules/faculties/faculty.routes");
+const studentRoutes = require("./modules/students/student.routes");
+const courseRoutes = require("./modules/course/course.routes");
+=======
 const errorHandler = require('./middlewares/errorHandler');
+>>>>>>> d2c8339c165ccee50aaa7a355c8dd75603d01ead
 
 const app = express();
 
@@ -16,13 +23,26 @@ app.use(morgan("dev"));
 
 // API Docs
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use("/api/departments", departmentRoutes);
+app.use("/api/faculties", facultyRoutes);
+app.use("/api/students", studentRoutes);
+app.use("/api/courses", courseRoutes);
 
 // Routes
-// Register your routes here as you build them
+<<<<<<< HEAD
+// All module routes registered above
+// e.g. app.use('/api/auth', require('./routes/auth.routes'));
+=======
 app.use('/api/auth/admin', require('./routes/admin-auth.routes'));
 app.use('/api/auth/user', require('./routes/user-auth.routes'));
 app.use('/api/announcements', require('./routes/announcement.routes'));
+<<<<<<< HEAD
 app.use('/api/result', require('./routes/resultRoute'));
+=======
+app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/students', require('./routes/student.routes'));
+>>>>>>> d2c8339c165ccee50aaa7a355c8dd75603d01ead
+>>>>>>> a5c14e87655127f232628060248f8a77a2088ce5
 
 // Health Check
 app.get("/", (req, res) => {

@@ -60,6 +60,7 @@ const validateAttendance = [
 const validateCourse = [
   body('title').trim().notEmpty().withMessage('Course title is required'),
   body('courseCode').trim().notEmpty().withMessage('Course code is required'),
+  body('department').trim().notEmpty().withMessage('Department ID is required'),
   body('semester').isIn(['first', 'second']).withMessage('Semester must be first or second'),
   body('academicYear').notEmpty().withMessage('Academic year is required'),
   handleValidationErrors,
@@ -75,6 +76,39 @@ const validateAnnouncement = [
   handleValidationErrors,
 ];
 
+const validateDepartment = [
+  body('name').trim().notEmpty().withMessage('Department name is required'),
+  body('code').trim().notEmpty().withMessage('Department code is required'),
+  body('faculty').trim().notEmpty().withMessage('Faculty ID is required'),
+  body('isActive')
+    .optional()
+    .isBoolean()
+    .withMessage('isActive must be a boolean'),
+  handleValidationErrors,
+];
+
+const validateFaculty = [
+  body('name').trim().notEmpty().withMessage('Faculty name is required'),
+  body('code').trim().notEmpty().withMessage('Faculty code is required'),
+  body('isActive')
+    .optional()
+    .isBoolean()
+    .withMessage('isActive must be a boolean'),
+  handleValidationErrors,
+];
+
+const validateStudent = [
+  body('user').trim().notEmpty().withMessage('User ID is required'),
+  body('studentId').trim().notEmpty().withMessage('Student ID is required'),
+  body('department').trim().notEmpty().withMessage('Department ID is required'),
+  body('enrollmentYear').isInt().withMessage('Enrollment year must be a valid year'),
+  body('isActive')
+    .optional()
+    .isBoolean()
+    .withMessage('isActive must be a boolean'),
+  handleValidationErrors,
+];
+
 module.exports = {
   validateCreateUser,
   validateRegister,
@@ -83,4 +117,7 @@ module.exports = {
   validateAttendance,
   validateCourse,
   validateAnnouncement,
+  validateDepartment,
+  validateFaculty,
+  validateStudent,
 };
