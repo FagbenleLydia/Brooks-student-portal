@@ -2,6 +2,7 @@ const Result = require('../models/result');
 const User = require('../models/User');
 const Course = require('../models/Course');
 const Student = require('../models/Student');
+const { findOne } = require('../models/Department');
 
 function calculateGrade(score) {
     if (score >= 70) return 'A';
@@ -141,3 +142,93 @@ exports.getCourseResults = async (req,res) => {
         res.status(500).json({error: err.message});
     }
 }
+
+exports.updateResult = async (req,res) => {
+    try{
+        const{id} = req.params;
+        const{score} = req.body;
+        const teacherId = req.user.id
+
+        if(!id){
+            return res.status(400).json({error: 'Result does not exist'})
+        }
+        const existingResult = await Result.findOne({_id:id, teacher: teacherId});
+
+        if(!existingResult){
+            return res.status(400).json({error: 'Result not found'})
+        }
+
+        if (score === undefined || score === null) {
+            return res.status(400).json({ error: 'Score is required' });
+        }
+        if (isNaN(score) || score < 0 || score > 100) {
+            return res.status(400).json({ error: 'Invalid score' });
+        }
+
+        const grade = calculateGrade(score)
+
+        const resultUpdated = await Result.findByIdAndUpdate(
+            id,
+            {score,grade},
+            {new: true}
+
+        );
+
+        return res.status(200).json({
+            message: 'Result updated successfully',
+            resultUpdated
+        })
+    }
+
+    catch(err){
+        return res.status(500).json({error: err.message})
+    }
+}
+
+exports.getAdminSearch = async (req, res) => {
+    try {
+        const { studentID, level } = req.query;
+
+    
+        if (!studentID || !level) {
+            return res.status(400).json({ error: 'Student ID and level are required' });
+        }
+
+        // find the user by their authUserId
+        const student = await User.findOne({ authUserId: studentID });
+        if (!student) {
+            return res.status(404).json({ error: 'Student not found' });
+        }
+
+        // find their student document
+        const studentDoc = await Student.findOne({ user: student._id });
+        if (!studentDoc) {
+            return res.status(404).json({ error: 'Student profile not found' });
+        }
+
+        // find all their results filtered by level
+        const results = await Result.find({ 
+            studentID: studentDoc._id, 
+            level 
+        })
+        .populate('course', 'title courseCode')
+        .populate('teacher', 'firstName lastName');
+
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'No results found' });
+        }
+
+        return res.status(200).json({
+            message: 'Results retrieved successfully',
+            student: {
+                name: `${student.firstName} ${student.lastName}`,
+                authUserId: student.authUserId,
+                level
+            },
+            results
+        });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

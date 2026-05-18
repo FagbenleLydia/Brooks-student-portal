@@ -6,5 +6,6 @@ const{protect,authorize} = require('../middlewares/auth.middleware');
 router.post('/uploadresult',protect,authorize('teacher'), resultController.postResult);
 router.get('/getresult',protect,authorize('student','admin'),resultController.getStudentResult)
 router.get('/getcourseresult',protect,authorize('teacher','admin'), resultController.getCourseResults)
+router.put('/updateresult/:id',protect, authorize('teacher'),resultController.updateResult)
 
 module.exports = router;
