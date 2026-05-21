@@ -11,6 +11,12 @@ const studentRoutes = require("./modules/students/student.routes");
 const courseRoutes = require("./modules/course/course.routes");
 const levelRoutes = require('./modules/level/level.route');
 
+const {protect} = require('./middlewares/auth.middleware');
+
+
+const dotenv = require('dotenv');
+
+dotenv.config();
 const app = express();
 
 
@@ -31,6 +37,15 @@ app.use('/api/levels', levelRoutes);
 // Routes
 // All module routes registered above
 // e.g. app.use('/api/auth', require('./routes/auth.routes'));
+app.use('/api/auth/admin', require('./routes/admin-auth.routes'));
+app.use('/api/auth/user', require('./routes/user-auth.routes'));
+app.use('/api/announcements', require('./routes/announcement.routes'));
+<<<<<<< HEAD
+app.use('/api/result', require('./routes/resultRoute'));
+=======
+app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/students', require('./routes/student.routes'));
+>>>>>>> d2c8339c165ccee50aaa7a355c8dd75603d01ead
 
 // Health Check
 app.get("/", (req, res) => {
