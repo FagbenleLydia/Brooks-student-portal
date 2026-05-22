@@ -1,7 +1,7 @@
 const Result = require('../models/result');
 const User = require('../models/User');
 const Course = require('../models/Course');
-const Student = require('../models/Student');
+const Student = require('../models/student');
 const { findOne } = require('../models/Department');
 
 function calculateGrade(score) {
@@ -10,7 +10,7 @@ function calculateGrade(score) {
     if (score >= 50) return 'C';
     if (score >= 45) return 'D';
     if (score >= 40) return 'E';
-    return 'F'; 
+    return 'F';
 }
 
 exports.postResult = async (req,res) => {
@@ -37,7 +37,7 @@ exports.postResult = async (req,res) => {
             return res.status(400).json({error: 'Invalid Score'})
         }
 
-        //checking if the student registered for a particular course 
+        //checking if the student registered for a particular course
         const validateStudent = await User.findOne({authUserId: studentID});
         if(!validateStudent){
             return res.status(404).json({error: 'Student does not exist'});
@@ -125,7 +125,7 @@ exports.getCourseResults = async (req,res) => {
             level,
             department,
             semester
-    
+
         }).select(['studentID score grade'])
 
         if(results.length===0){
@@ -189,7 +189,7 @@ exports.getAdminSearch = async (req, res) => {
     try {
         const { studentID, level } = req.query;
 
-    
+
         if (!studentID || !level) {
             return res.status(400).json({ error: 'Student ID and level are required' });
         }
@@ -207,9 +207,9 @@ exports.getAdminSearch = async (req, res) => {
         }
 
         // find all their results filtered by level
-        const results = await Result.find({ 
-            studentID: studentDoc._id, 
-            level 
+        const results = await Result.find({
+            studentID: studentDoc._id,
+            level
         })
         .populate('course', 'title courseCode')
         .populate('teacher', 'firstName lastName');
