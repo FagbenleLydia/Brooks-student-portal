@@ -830,99 +830,36 @@
         }
       }
     },
-    "/grades": {
-      "post": {
-        "tags": ["Grades"],
-        "summary": "Record student grades",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["student", "course", "scores", "semester", "academicYear"],
-                "properties": {
-                  "student": { "type": "string" },
-                  "course": { "type": "string" },
-                  "scores": {
-                    "type": "object",
-                    "required": ["assignment", "midterm", "exam"],
-                    "properties": {
-                      "assignment": { "type": "number", "minimum": 0, "maximum": 30 },
-                      "midterm": { "type": "number", "minimum": 0, "maximum": 30 },
-                      "exam": { "type": "number", "minimum": 0, "maximum": 40 }
-                    }
-                  },
-                  "semester": { "type": "string", "enum": ["first", "second"] },
-                  "academicYear": { "type": "string" }
-                }
-              },
-              "example": {
-                "student": "64abc1234567890123456789",
-                "course": "64def1234567890123456789",
-                "scores": { "assignment": 25.5, "midterm": 22.0, "exam": 35.0 },
-                "semester": "first",
-                "academicYear": "2025/2026"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": { "description": "Grade metadata stored cleanly" },
-          "400": { "description": "Validation Error - Grade thresholds breached or missing reference tracking ids" }
-        }
-      }
-    },
-    "/grades/student/{studentId}": {
-      "get": {
-        "tags": ["Grades"],
-        "summary": "Get all grades for a student + GPA",
-        "parameters": [{ "name": "studentId", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Grades and structural calculation values metrics maps" } }
-      }
-    },
-    "/attendance": {
-      "post": {
-        "tags": ["Attendance"],
-        "summary": "Mark attendance index details metrics",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["student", "course", "status", "date"],
-                "properties": {
-                  "student": { "type": "string" },
-                  "course": { "type": "string" },
-                  "status": { "type": "string", "enum": ["present", "absent", "late"] },
-                  "date": { "type": "string", "format": "date-time" }
-                }
-              },
-              "example": {
-                "course": "64abc1234567890123456789",
-                "student": "64def1234567890123456789",
-                "status": "present",
-                "date": "2026-05-23T10:00:00Z"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": { "description": "Attendance recorded" },
-          "400": { "description": "Validation Error - Invalid status enum or malformed ISO date" }
-        }
-      }
-    },
     "/announcements": {
       "get": {
         "tags": ["Announcements"],
-        "summary": "Get all published announcements",
-        "responses": { "200": { "description": "List of announcements" } }
+        "summary": "Fetch viewable announcements filtered by audience authorization mapping",
+        "description": "Retrieves published notices targeting the active role context based on the application's audienceMap configuration. Sorted descending by creation time.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Notice list array retrieved and populated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "count": { "type": "integer", "example": 2 },
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/Announcement" } }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Server internal controller logging exception", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorTemplate" } } } }
+        }
       },
       "post": {
         "tags": ["Announcements"],
-        "summary": "Post an announcement",
+        "summary": "Post a new announcement bulletin tracking object",
+        "description": "Initializes a structured notice targeting precise audience lists. Auto-binds the authenticated poster ID to the document.",
+        "security": [{ "BearerAuth": [] }],
         "requestBody": {
           "required": true,
           "content": {
@@ -931,22 +868,380 @@
                 "type": "object",
                 "required": ["title", "content"],
                 "properties": {
-                  "title": { "type": "string" },
-                  "content": { "type": "string" },
-                  "targetAudience": { "type": "string", "enum": ["students", "teachers", "all"] }
+                  "title": { "type": "string", "example": "Rescheduled Laboratory Session Info" },
+                  "content": { "type": "string", "example": "The EEE 311 practical session changes locations..." },
+                  "targetAudience": { "type": "string", "enum": ["students", "teachers", "all"], "default": "all" }
                 }
-              },
-              "example": {
-                "title": "Second Semester Registration Deadline",
-                "content": "Ensure all registration tasks are compiled completely within week intervals.",
-                "targetAudience": "students"
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Announcement posted" },
-          "400": { "description": "Validation Error - Title/content missing or inaccurate targetAudience scope value selection" }
+          "201": {
+            "description": "Announcement saved and populated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Announcement posted successfully" },
+                    "data": { "$ref": "#/components/schemas/Announcement" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Field validation failure parsing", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ValidationErrorTemplate" } } } },
+          "500": { "description": "Server internal database storage handling failure" }
+        }
+      }
+    },
+    "/announcements/{id}": {
+      "delete": {
+        "tags": ["Announcements"],
+        "summary": "Delete an announcement configuration mapping completely",
+        "description": "Removes a specific announcement object instance entirely out of active database clusters using its ID parameter mapping.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target announcement resource unique ID identifier" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Deletion sequence verification trace complete",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Announcement deleted successfully" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Target announcement object trace lookup failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorTemplate" } } } },
+          "500": { "description": "Internal database operational logic execution failure" }
+        }
+      }
+    },
+    "/payments/initiate": {
+      "post": {
+        "tags": ["Payments Engine"],
+        "summary": "Initiate academic portal registration payment billing loop",
+        "description": "Processes payment generation parameters, records a structured reference tracking map back to Remita transaction hooks, and inserts a pending document pattern into the storage layers.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["session", "level", "amount"],
+                "properties": {
+                  "session": { "type": "string", "description": "Valid Session Document ObjectId String", "example": "651c3f191f1a2c3d4e5f6a8c" },
+                  "level": { "type": "string", "example": "300" },
+                  "amount": { "type": "number", "example": 45000 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Payment index parameterization transaction generated successfully with a tracking RRR code link",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Payment initiated successfully" },
+                    "payment": { "$ref": "#/components/schemas/Payment" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Request object evaluation failures based on validation middleware rules", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ValidationErrorTemplate" } } } },
+          "500": { "description": "Remita integration services gateway failure trace exception mapping" }
+        }
+      }
+    },
+    "/payments/verify/{id}": {
+      "put": {
+        "tags": ["Payments Engine"],
+        "summary": "Verify an active payment transaction through third-party billing layers",
+        "description": "Pulls internal payment fields, executes remote clearing routines via external service hooks, and sets status properties to successful or failed.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Unique Payment Document ObjectId string tag to check" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Verification engine evaluation routines complete",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Payment verified successfully" },
+                    "payment": { "$ref": "#/components/schemas/Payment" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Payment reference metric key code structural lookup returns missing status results", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorTemplate" } } } },
+          "500": { "description": "Remote network operations exception block" }
+        }
+      }
+    },
+    "/payments/status": {
+      "get": {
+        "tags": ["Payments Engine"],
+        "summary": "Retrieve active session tracking payment clearance markers for the logged-in student user profile",
+        "description": "Pulls data pipelines verifying that a valid payment context mapping tracks to successful states.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Payment parameters context checking verification processing loop complete",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "paid": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Student has paid school fees" },
+                    "payment": { "$ref": "#/components/schemas/Payment" }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Database relational structure interface engine operational failures" }
+        }
+      }
+    },
+    "/result/uploadresult": {
+      "post": {
+        "tags": ["Academic Results Engine"],
+        "summary": "Upload and log individual course grade results",
+        "description": "Accepts relational ObjectId strings matching underlying definitions, validates data parameters, records grade details, and processes baseline mapping checks. Restricted to Teachers.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["studentID", "course", "session", "level", "semester", "score"],
+                "properties": {
+                  "studentID": { "type": "string", "description": "MongoDB ObjectId referencing target Student document", "example": "651c3f191f1a2c3d4e5f6c10" },
+                  "course": { "type": "string", "description": "MongoDB ObjectId referencing target Course document", "example": "651c3f191f1a2c3d4e5f6e55" },
+                  "session": { "type": "string", "description": "MongoDB ObjectId referencing target Session document", "example": "651c3f191f1a2c3d4e5f6a8c" },
+                  "level": { "type": "string", "enum": ["100","200","300","400","500","600","Spill-Over"], "example": "400" },
+                  "semester": { "type": "string", "enum": ["first", "second"], "example": "first" },
+                  "score": { "type": "number", "minimum": 0, "maximum": 100, "example": 84 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Academic evaluation entry logged successfully into performance matrices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Result uploaded successfully" },
+                    "result": { "$ref": "#/components/schemas/Result" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid parameter configuration matrices or bounds payload values structural failure error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ValidationErrorTemplate" } } } },
+          "500": { "description": "Internal storage layer runtime engine tracking failure" }
+        }
+      }
+    },
+    "/result/getresult": {
+      "get": {
+        "tags": ["Academic Results Engine"],
+        "summary": "Fetch logged results mapped to active student accounts",
+        "description": "Queries historical storage paths to pull personal result arrays linking to the active token's context.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Personal results vector retrieved successfully from database blocks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Result found successfully" },
+                    "results": { "type": "array", "items": { "$ref": "#/components/schemas/Result" } }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Application schema interaction failure log reference block" }
+        }
+      }
+    },
+    "/result/getcourseresult": {
+      "get": {
+        "tags": ["Academic Results Engine"],
+        "summary": "Query composite class results datasets based on custom criteria filters",
+        "description": "Enables evaluating structural distribution values for an entire class roster matching targeted parameter definitions.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "courseId", "in": "query", "required": true, "schema": { "type": "string" }, "description": "MongoDB ObjectId referencing specific course target tracking fields", "example": "651c3f191f1a2c3d4e5f6e55" },
+          { "name": "level", "in": "query", "required": false, "schema": { "type": "string" }, "example": "400" },
+          { "name": "semester", "in": "query", "required": false, "schema": { "type": "string" }, "example": "first" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Class performance record vector isolated and parsed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Results retrieved successfully" },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "studentID": { "type": "string", "example": "651c3f191f1a2c3d4e5f6c10" },
+                          "score": { "type": "number", "example": 84 },
+                          "grade": { "type": "string", "example": "A" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Server tracking index evaluation routing crash exception trace" }
+        }
+      }
+    },
+    "/result/updateresult/{id}": {
+      "put": {
+        "tags": ["Academic Results Engine"],
+        "summary": "Modify an existing grade result score metric entry",
+        "description": "Permits authorized instructors to dynamic update metric scores inside internal document arrays. Triggers recalculation processes.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target unique Result document instance ObjectId" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["score"],
+                "properties": {
+                  "score": { "type": "number", "minimum": 0, "maximum": 100, "example": 92 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Result document metrics altered and updated inside storage array clusters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Result updated successfully" },
+                    "resultUpdated": { "$ref": "#/components/schemas/Result" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation parameter constraint failures or value out of bounds structural error payload", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ValidationErrorTemplate" } } } },
+          "500": { "description": "Data engine transaction tracking channel crash logging record" }
+        }
+      }
+    },
+    "/result/adminsearch": {
+      "get": {
+        "tags": ["Academic Results Engine"],
+        "summary": "Admin targeted multi-model relational grade verification search tool",
+        "description": "Executes relational schema pipelines to extract comprehensive student transcript results records populated across structural interfaces.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "studentID", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Target Student unique document ObjectId reference identification string value", "example": "651c3f191f1a2c3d4e5f6c10" },
+          { "name": "level", "in": "query", "required": true, "schema": { "type": "string" }, "description": "Academic tracking level configuration block segment value mapping", "example": "400" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Relational data tracking maps completely processed and compiled vector output array structures",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Results retrieved successfully" },
+                    "student": {
+                      "type": "object",
+                      "properties": {
+                        "_id": { "type": "string", "example": "651c3f191f1a2c3d4e5f6c10" },
+                        "user": { "type": "string", "example": "651c3f191f1a2c3d4e5f6a22" },
+                        "matricNumber": { "type": "string", "example": "ENG1802999" },
+                        "level": { "type": "string", "example": "400" }
+                      }
+                    },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          { "$ref": "#/components/schemas/Result" },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "course": {
+                                "type": "object",
+                                "properties": {
+                                  "_id": { "type": "string", "example": "651c3f191f1a2c3d4e5f6e55" },
+                                  "courseCode": { "type": "string", "example": "EEE401" },
+                                  "title": { "type": "string", "example": "Digital Signal Processing" }
+                                }
+                              },
+                              "teacher": {
+                                "type": "object",
+                                "properties": {
+                                  "_id": { "type": "string", "example": "651c3f191f1a2c3d4e5f6a99" },
+                                  "firstName": { "type": "string", "example": "Emmanuel" },
+                                  "lastName": { "type": "string", "example": "Okonkwo" }
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Relational query aggregation exception structural error routine tracking output logs" }
         }
       }
     }
