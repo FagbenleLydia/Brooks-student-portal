@@ -63,6 +63,7 @@ const validateCourse = [
   body('department').trim().notEmpty().withMessage('Department ID is required'),
   body('semester').isIn(['first', 'second']).withMessage('Semester must be first or second'),
   body('academicYear').notEmpty().withMessage('Academic year is required'),
+  body('level').notEmpty().withMessage('level is required'),
   handleValidationErrors,
 ];
 
@@ -98,14 +99,56 @@ const validateFaculty = [
 ];
 
 const validateStudent = [
-  body('user').trim().notEmpty().withMessage('User ID is required'),
-  body('studentId').trim().notEmpty().withMessage('Student ID is required'),
   body('department').trim().notEmpty().withMessage('Department ID is required'),
   body('enrollmentYear').isInt().withMessage('Enrollment year must be a valid year'),
   body('isActive')
     .optional()
     .isBoolean()
     .withMessage('isActive must be a boolean'),
+  handleValidationErrors,
+];
+
+const validateCourseRegistration = [
+  body('courseIds')
+    .isArray({ min: 1 })
+    .withMessage('courseIds must be an array containing at least one course ID'),
+  body('courseIds.*')
+    .isMongoId()
+    .withMessage('Each course ID within the array must be a valid MongoDB ObjectId'),
+  body('semester')
+    .isIn(['First', 'Second', 'first', 'second'])
+    .withMessage('Semester must be either First or Second'),
+  body('sessionId')
+    .isMongoId()
+    .withMessage('Please provide a valid session ID'),
+  handleValidationErrors,
+];
+
+const validateUpdateCourseRegistration = [
+  body('courseIds')
+    .optional()
+    .isArray()
+    .withMessage('courseIds must be structured as a valid array'),
+  body('courseIds.*')
+    .optional()
+    .isMongoId()
+    .withMessage('Each course ID within the array must be a valid MongoDB ObjectId'),
+  body('semester')
+    .optional()
+    .isIn(['First', 'Second', 'first', 'second'])
+    .withMessage('Semester must be either First or Second'),
+  handleValidationErrors,
+];
+
+const validateSession = [
+  body('name')
+    .trim()
+    .notEmpty()
+    .withMessage('Academic session name is required (e.g., 2025/2026)'),
+  body('isCurrent')
+    .optional()
+    .isBoolean()
+    .withMessage('isCurrent must be a boolean value'),
   handleValidationErrors,
 ];
 
@@ -120,4 +163,7 @@ module.exports = {
   validateDepartment,
   validateFaculty,
   validateStudent,
+  validateCourseRegistration,
+  validateUpdateCourseRegistration,
+  validateSession,
 };

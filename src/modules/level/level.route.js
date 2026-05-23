@@ -9,16 +9,17 @@ const {
   updateLevel,
   deleteLevel,
 } = require('./level.controller');
+const { protect, authorize } = require('../../middlewares/auth.middleware');
 
 
-router.post('/', createLevel);
+router.post('/', protect, authorize('admin'), createLevel);
 
-router.get('/', getLevels);
+router.get('/', protect, getLevels);
 
-router.get('/:id', getLevel);
+router.get('/:id', protect, getLevel);
 
-router.put('/:id', updateLevel);
+router.put('/:id', protect, authorize('admin'), updateLevel);
 
-router.delete('/:id', deleteLevel);
+router.delete('/:id', protect, authorize('admin'), deleteLevel);
 
 module.exports = router;

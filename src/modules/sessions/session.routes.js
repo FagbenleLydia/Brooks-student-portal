@@ -10,19 +10,21 @@ const {
   setCurrentSession,
   deleteSession,
 } = require('./session.controller');
+const { protect, authorize } = require('../../middlewares/auth.middleware');
+const { validateSession } = require('../../middlewares/validate.middleware');
 
-router.post('/', createSession);
+router.post('/', protect, authorize('admin'), validateSession, createSession);
 
 router.get('/', getSessions);
 
-router.get('/current', getCurrentSession);
+router.get('/current', protect, getCurrentSession);
 
-router.get('/:id', getSession);
+router.get('/:id', protect, getSession);
 
-router.put('/:id', updateSession);
+router.put('/:id', protect, authorize('admin'), updateSession);
 
-router.patch('/:id/set-current', setCurrentSession);
+router.patch('/:id/set-current', protect, authorize('admin'), setCurrentSession);
 
-router.delete('/:id', deleteSession);
+router.delete('/:id', protect, authorize('admin'), deleteSession);
 
 module.exports = router;

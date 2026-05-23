@@ -9,11 +9,12 @@ const {
   updateFaculty,
   deleteFaculty,
 } = require("./faculty.controller");
+const { protect, authorize } = require("../../middlewares/auth.middleware");
 
-router.post("/", validateFaculty, createFaculty);
-router.get("/", getFaculties);
-router.get("/:id", getFacultyById);
-router.put("/:id", validateFaculty, updateFaculty);
-router.delete("/:id", deleteFaculty);
+router.post("/", protect, authorize('admin'), validateFaculty, createFaculty);
+router.get("/", protect, getFaculties);
+router.get("/:id", protect, getFacultyById);
+router.put("/:id", protect, authorize('admin'), validateFaculty, updateFaculty);
+router.delete("/:id", protect, authorize('admin'), deleteFaculty);
 
 module.exports = router;

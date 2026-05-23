@@ -3,7 +3,10 @@ const Course = require("../../models/Course");
 
 exports.createCourse = async (req, res) => {
   try {
-    const course = await Course.create(req.body);
+    const course = await Course.create({
+      ...req.body,
+      teacher: req.user._id
+    });
 
     res.status(201).json({
       success: true,

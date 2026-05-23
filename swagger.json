@@ -3,7 +3,7 @@
   "info": {
     "title": "Brooks Student Portal API",
     "version": "1.0.0",
-    "description": "RESTful API for Brooks Student Portal School Management System"
+    "description": "RESTful API for Brooks Student Portal School Management System with strict validator synchronization."
   },
   "servers": [
     { "url": "http://localhost:5000/api", "description": "Local Dev Server" }
@@ -35,11 +35,22 @@
       "post": {
         "tags": ["Admin Auth"],
         "summary": "Admin-led user creation",
-        "description": "Allows an authenticated admin to manually register teachers, students, or parents.",
+        "description": "Allows an authenticated admin to manually register users with higher administrative roles.",
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["firstName", "lastName", "email", "password"],
+                "properties": {
+                  "firstName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 },
+                  "role": { "type": "string", "enum": ["admin", "teacher", "student", "parent"] }
+                }
+              },
               "example": {
                 "firstName": "Jane",
                 "lastName": "Smith",
@@ -52,6 +63,7 @@
         },
         "responses": {
           "201": { "description": "User created successfully" },
+          "400": { "description": "Validation Error - Invalid parameters provided" },
           "403": { "description": "Forbidden - Admin access required" }
         }
       }
@@ -59,13 +71,23 @@
     "/auth/user/register": {
       "post": {
         "tags": ["User Auth"],
-        "summary": "Public student/user registration",
-        "description": "Triggers the transaction-based registration, ID generation, and welcome email.",
+        "summary": "Public user registration",
         "security": [],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["firstName", "lastName", "email", "password"],
+                "properties": {
+                  "firstName": { "type": "string" },
+                  "lastName": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 6 },
+                  "role": { "type": "string", "enum": ["teacher", "student", "parent"] }
+                }
+              },
               "example": {
                 "firstName": "John",
                 "lastName": "Doe",
@@ -77,8 +99,8 @@
           }
         },
         "responses": {
-          "201": { "description": "User registered and email sent" },
-          "500": { "description": "Internal server error / Transaction failed" }
+          "201": { "description": "User registered successfully" },
+          "400": { "description": "Validation Error - Invalid register payload" }
         }
       }
     },
@@ -91,14 +113,22 @@
           "required": true,
           "content": {
             "application/json": {
-              "example": { "emailOrAuthId": "john@school.com or STU-001", "password": "password123" }
+              "schema": {
+                "type": "object",
+                "required": ["emailOrAuthId", "password"],
+                "properties": {
+                  "emailOrAuthId": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              },
+              "example": { "emailOrAuthId": "john@school.com", "password": "password123" }
             }
           }
         },
         "responses": {
-          "200": { "description": "Login successful, returns JWT and user data" },
-          "401": { "description": "Invalid credentials" },
-          "404": { "description": "User not found" }
+          "200": { "description": "Login successful" },
+          "400": { "description": "Validation Error - Missing identifier or password" },
+          "401": { "description": "Invalid credentials" }
         }
       }
     },
@@ -106,88 +136,741 @@
       "get": {
         "tags": ["User Auth"],
         "summary": "Get my profile",
-        "description": "Retrieves the profile of the currently logged-in user via JWT.",
         "responses": {
           "200": { "description": "Profile data retrieved" },
           "401": { "description": "Not authorized" }
         }
       }
     },
-    "/students/{id}": {
-      "get": {
-        "tags": ["Students"],
-        "summary": "Get a single student",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Student data" }, "404": { "description": "Not found" } }
-      },
-      "put": {
-        "tags": ["Students"],
-        "summary": "Update student (Admin only)",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Updated student" } }
-      },
-      "delete": {
-        "tags": ["Students"],
-        "summary": "Delete student (Admin only)",
-        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Deleted" } }
-      }
-    },
-    "/courses": {
-      "get": {
-        "tags": ["Courses"],
-        "summary": "Get all active courses",
-        "responses": { "200": { "description": "List of courses" } }
-      },
+    "/faculties": {
       "post": {
-        "tags": ["Courses"],
-        "summary": "Create a course (Admin only)",
+        "tags": ["Faculties"],
+        "summary": "Create a new faculty",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "code"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "code": { "type": "string" },
+                  "isActive": { "type": "boolean", "default": true }
+                }
+              },
               "example": {
-                "title": "Mathematics",
-                "courseCode": "MTH101",
-                "semester": "first",
-                "academicYear": "2024/2025"
+                "name": "Faculty of Engineering",
+                "code": "ENG",
+                "isActive": true
               }
             }
           }
         },
-        "responses": { "201": { "description": "Course created" } }
+        "responses": {
+          "201": { "description": "Faculty created successfully" },
+          "400": { "description": "Validation Error - Missing name or code" }
+        }
+      },
+      "get": {
+        "tags": ["Faculties"],
+        "summary": "Get all faculties",
+        "responses": { "200": { "description": "List of all compiled faculties" } }
       }
     },
-    "/courses/{id}/enroll": {
-      "post": {
-        "tags": ["Courses"],
-        "summary": "Enroll a student in a course (Admin only)",
+    "/faculties/{id}": {
+      "get": {
+        "tags": ["Faculties"],
+        "summary": "Get faculty by ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Faculty data payload" }, "404": { "description": "Faculty not found" } }
+      },
+      "put": {
+        "tags": ["Faculties"],
+        "summary": "Update faculty profile",
         "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
         "requestBody": {
+          "required": true,
           "content": {
-            "application/json": { "example": { "studentId": "64abc123..." } }
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "code": { "type": "string" },
+                  "isActive": { "type": "boolean" }
+                }
+              },
+              "example": { "name": "Faculty of Engineering & Technology" }
+            }
           }
         },
-        "responses": { "200": { "description": "Student enrolled" } }
+        "responses": { "200": { "description": "Faculty updated" }, "400": { "description": "Validation Error" } }
+      },
+      "delete": {
+        "tags": ["Faculties"],
+        "summary": "Delete faculty document",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Faculty deleted safely" } }
+      }
+    },
+    "/departments": {
+      "post": {
+        "tags": ["Departments"],
+        "summary": "Create a new department",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "code", "faculty"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "code": { "type": "string" },
+                  "faculty": { "type": "string", "description": "Faculty document ID pointer" },
+                  "isActive": { "type": "boolean", "default": true }
+                }
+              },
+              "example": {
+                "name": "Electrical Electronics Engineering",
+                "code": "EEE",
+                "faculty": "64abc1234567890123456789",
+                "isActive": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Department created successfully" },
+          "400": { "description": "Validation Error - Parameters missing or non-boolean isActive" }
+        }
+      },
+      "get": {
+        "tags": ["Departments"],
+        "summary": "Get all departments",
+        "responses": { "200": { "description": "List of all administrative departments" } }
+      }
+    },
+    "/departments/{id}": {
+      "get": {
+        "tags": ["Departments"],
+        "summary": "Get department by ID",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Department details retrieved" } }
+      },
+      "put": {
+        "tags": ["Departments"],
+        "summary": "Update department details",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": { "name": "Electronic Systems Engineering" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Department updated" }, "400": { "description": "Validation Error" } }
+      },
+      "delete": {
+        "tags": ["Departments"],
+        "summary": "Delete a department",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Department deleted" } }
+      }
+    },
+    "/levels": {
+      "post": {
+        "tags": ["Levels"],
+        "summary": "Create an academic level tier",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": { "name": "100 Level", "code": "L100" }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Academic tier created" } }
+      },
+      "get": {
+        "tags": ["Levels"],
+        "summary": "Get structural level tiers array",
+        "responses": { "200": { "description": "List of structural level tiers" } }
+      }
+    },
+    "/levels/{id}": {
+      "get": {
+        "tags": ["Levels"],
+        "summary": "Get level details",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Level information returned" } }
+      },
+      "put": {
+        "tags": ["Levels"],
+        "summary": "Update level specifications",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Level changed updated details" } }
+      },
+      "delete": {
+        "tags": ["Levels"],
+        "summary": "Remove level entry",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Level record unlinked" } }
+      }
+    },
+    "/courses": {
+      "post": {
+        "tags": ["Courses"],
+        "summary": "Create academic educational course configuration mapping",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "courseCode", "department", "semester", "academicYear"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "courseCode": { "type": "string" },
+                  "department": { "type": "string", "description": "Department object ID validation target" },
+                  "semester": { "type": "string", "enum": ["first", "second"] },
+                  "academicYear": { "type": "string" }
+                }
+              },
+              "example": {
+                "title": "Introduction to Embedded Micro-Controllers",
+                "courseCode": "EEE312",
+                "department": "64abc1234567890123456789",
+                "semester": "first",
+                "academicYear": "2025/2026",
+                "level": "64abc1234567890123456789"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Course tracking parameters created successfully" },
+          "400": { "description": "Validation Error - Checked requirements mismatch parameters" }
+        }
+      },
+      "get": {
+        "tags": ["Courses"],
+        "summary": "Get all populated courses metrics",
+        "responses": { "200": { "description": "Full array returned alongside collection data element total count balance" } }
+      }
+    },
+    "/courses/{id}": {
+      "get": {
+        "tags": ["Courses"],
+        "summary": "Get course metrics details",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Target selection details returned safely" } }
+      },
+      "put": {
+        "tags": ["Courses"],
+        "summary": "Update course mapping properties",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": { "title": "Advanced Digital Signal Processing" }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Updated course document returned cleanly" } }
+      },
+      "delete": {
+        "tags": ["Courses"],
+        "summary": "Remove course module pointer mapping definition instance",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Course dropped safely" } }
+      }
+    },
+    "/students/profile": {
+      "post": {
+        "tags": ["Students"],
+        "summary": "Create student profile configuration metadata",
+        "description": "Creates an extended profile document context tied strictly to validation structural laws.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["department", "enrollmentYear"],
+                "properties": {
+                  "department": { "type": "string" },
+                  "enrollmentYear": { "type": "integer" },
+                  "isActive": { "type": "boolean" }
+                }
+              },
+              "example": {
+                "department": "64abc1234567890123456789",
+                "enrollmentYear": 2026,
+                "isActive": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Student profile built successfully" },
+          "400": { "description": "Validation Error - Invalid year type or structural element string assignment missing" }
+        }
+      }
+    },
+    "/students/{id}": {
+      "get": {
+        "tags": ["Students"],
+        "summary": "Get a single student profile documentation model parameters",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Student baseline payload parameters" } }
+      },
+      "put": {
+        "tags": ["Students"],
+        "summary": "Update student configurations details directly",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Student changes modified perfectly" } }
+      },
+      "delete": {
+        "tags": ["Students"],
+        "summary": "Delete student user tracking instance account entry mapping records from system",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Deleted profile entry clean records verified structural update" } }
+      }
+    },
+    "/course-registrations": {
+      "post": {
+        "tags": ["Course Registrations"],
+        "summary": "Register courses for a semester",
+        "description": "Creates a new semester course selection list. Requires a verified payment for the given session. Maximum unit workload cap is 24 units. Enforced student identity logic applies via bearer token.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["courseIds", "semester", "sessionId"],
+                "properties": {
+                  "courseIds": {
+                    "type": "array",
+                    "items": { "type": "string", "example": "651c3f191f1a2c3d4e5f6a11" }
+                  },
+                  "semester": { "type": "string", "example": "First" },
+                  "sessionId": { "type": "string", "example": "651c3f191f1a2c3d4e5f6a8c" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Courses registered successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/CourseRegistration" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Overloaded unit cap allocation (exceeds 24 units)", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "403": { "description": "Missing verified payment registration validation block", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "500": { "description": "Server exception tracking block", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      },
+      "get": {
+        "tags": ["Course Registrations"],
+        "summary": "Get all course registrations",
+        "description": "Retrieves all course registration index profiles in the application database. Populates student, course, and session sub-nodes.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Array retrieval success packet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "count": { "type": "integer", "example": 142 },
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/CourseRegistration" } }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Authentication context key dropped" },
+          "403": { "description": "Role clearance mismatch error (Requires Admin or Teacher access)" },
+          "500": { "description": "Internal server execution failure", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } }
+        }
+      }
+    },
+    "/course-registrations/{id}": {
+      "get": {
+        "tags": ["Course Registrations"],
+        "summary": "Get a specific course registration profile by ID",
+        "description": "Retrieves information for a explicit registration ID mapping. Students can only pull their personal records.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target registration profile ID string" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Record tracking block verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/CourseRegistration" }
+                  }
+                }
+              }
+            }
+          },
+          "403": { "description": "Access denied to alternative profile records context" },
+          "404": { "description": "Registration entity target matching not found" },
+          "500": { "description": "Internal server crash tracker block" }
+        }
+      },
+      "put": {
+        "tags": ["Course Registrations"],
+        "summary": "Update an existing course registration record mapping",
+        "description": "Enables adjustment of course arrays and semester names. Verifies active registration payment profiles on the record target.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target registration structural database entry" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "courseIds": { "type": "array", "items": { "type": "string" } },
+                  "semester": { "type": "string", "example": "Second" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Update execution block processing complete",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/CourseRegistration" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Invalid workload structural data parameters (over 24 units)" },
+          "403": { "description": "Payment layer evaluation expired or revoked" },
+          "404": { "description": "Target registration indexing parameter tracking missing" },
+          "500": { "description": "Database interface context handling error" }
+        }
+      },
+      "delete": {
+        "tags": ["Course Registrations"],
+        "summary": "Delete a course registration record entry permanently",
+        "description": "Removes a registration mapping context entirely from the data cluster. Only accessible by admins.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target registration ID value" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Target removal confirmation details updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Registration deleted successfully" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Missing operational key target" },
+          "500": { "description": "Internal database parsing error tracking index block" }
+        }
+      }
+    },
+    "/sessions": {
+      "post": {
+        "tags": ["Academic Sessions"],
+        "summary": "Create a new academic session profile",
+        "description": "Initializes structural target frameworks for an administrative tier. Restricted to Admin roles.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": {
+                  "name": { "type": "string", "example": "2025/2026" },
+                  "isCurrent": { "type": "boolean", "default": false }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Session initialized structural properties ready",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/AcademicSession" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation schema violations mapped explicitly", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "500": { "description": "Internal runtime crash event tracking logs" }
+        }
+      },
+      "get": {
+        "tags": ["Academic Sessions"],
+        "summary": "Get all academic sessions registered",
+        "description": "Fetches chronological list of database instances sorted by profile creation metrics (descending order). This is a public endpoint.",
+        "responses": {
+          "200": {
+            "description": "Array profile structure parsed out securely",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "count": { "type": "integer", "example": 5 },
+                    "data": { "type": "array", "items": { "$ref": "#/components/schemas/AcademicSession" } }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Internal platform exception engine response tracking" }
+        }
+      }
+    },
+    "/sessions/current": {
+      "get": {
+        "tags": ["Academic Sessions"],
+        "summary": "Get the currently active academic session reference marker",
+        "description": "Finds the specific configuration entity flagged as active across application logic networks.",
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "Active context state match confirmed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/AcademicSession" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "No academic operational state context flagged current", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } } },
+          "500": { "description": "Platform environment handling errors" }
+        }
+      }
+    },
+    "/sessions/{id}": {
+      "get": {
+        "tags": ["Academic Sessions"],
+        "summary": "Get precise configuration targets for a session",
+        "description": "Pulls data records matching an identification tracking token directly from memory stacks.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target ID" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Payload retrieval match structured output parsing verified",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/AcademicSession" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Target reference pointer tracking mapping error missing" },
+          "500": { "description": "System database network communications processing collapse" }
+        }
+      },
+      "put": {
+        "tags": ["Academic Sessions"],
+        "summary": "Update an individual session's configuration parameters",
+        "description": "Modifies metadata tracking records inside application schemas. Restricted to admin operators.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target document reference payload tracking metric ID" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string", "example": "2025/2026 - Revised" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "State transaction successfully completed storage update passes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/AcademicSession" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Mongoose schema field evaluation rules rejected adjustments structural maps" },
+          "404": { "description": "Identity verification reference element missing target link" },
+          "500": { "description": "Internal tracking infrastructure network handling error" }
+        }
+      },
+      "delete": {
+        "tags": ["Academic Sessions"],
+        "summary": "Remove an administrative session layout parameter record",
+        "description": "Deletes the target configuration parameters from the database. Restricted to admin operators.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Identity reference mapping code value string" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Transaction confirmation tracking success index logged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Session deleted successfully" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Database schema entry path could not verify structural target link validation" },
+          "500": { "description": "Transactional operational storage management cluster fault" }
+        }
+      }
+    },
+    "/sessions/{id}/set-current": {
+      "patch": {
+        "tags": ["Academic Sessions"],
+        "summary": "Set a specific target entity as the active global current tracker state",
+        "description": "Resets all alternative session records to an inactive state before updating the targeted session flag. Restricted to admin operators.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target active tracking ID value string key parameter link" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Global baseline toggled and targeted status updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Session set as current" },
+                    "data": { "$ref": "#/components/schemas/AcademicSession" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Target profile indexing validation checks unverified" },
+          "500": { "description": "Storage data engine manipulation exception failure tracking logs" }
+        }
       }
     },
     "/grades": {
       "post": {
         "tags": ["Grades"],
-        "summary": "Record student grades (Teacher/Admin)",
+        "summary": "Record student grades",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["student", "course", "scores", "semester", "academicYear"],
+                "properties": {
+                  "student": { "type": "string" },
+                  "course": { "type": "string" },
+                  "scores": {
+                    "type": "object",
+                    "required": ["assignment", "midterm", "exam"],
+                    "properties": {
+                      "assignment": { "type": "number", "minimum": 0, "maximum": 30 },
+                      "midterm": { "type": "number", "minimum": 0, "maximum": 30 },
+                      "exam": { "type": "number", "minimum": 0, "maximum": 40 }
+                    }
+                  },
+                  "semester": { "type": "string", "enum": ["first", "second"] },
+                  "academicYear": { "type": "string" }
+                }
+              },
               "example": {
-                "student": "64abc...",
-                "course": "64def...",
-                "scores": { "assignment": 25, "midterm": 22, "exam": 35 },
+                "student": "64abc1234567890123456789",
+                "course": "64def1234567890123456789",
+                "scores": { "assignment": 25.5, "midterm": 22.0, "exam": 35.0 },
                 "semester": "first",
-                "academicYear": "2024/2025"
+                "academicYear": "2025/2026"
               }
             }
           }
         },
-        "responses": { "201": { "description": "Grade recorded" } }
+        "responses": {
+          "201": { "description": "Grade metadata stored cleanly" },
+          "400": { "description": "Validation Error - Grade thresholds breached or missing reference tracking ids" }
+        }
       }
     },
     "/grades/student/{studentId}": {
@@ -195,26 +878,40 @@
         "tags": ["Grades"],
         "summary": "Get all grades for a student + GPA",
         "parameters": [{ "name": "studentId", "in": "path", "required": true, "schema": { "type": "string" } }],
-        "responses": { "200": { "description": "Grades and GPA" } }
+        "responses": { "200": { "description": "Grades and structural calculation values metrics maps" } }
       }
     },
     "/attendance": {
       "post": {
         "tags": ["Attendance"],
-        "summary": "Mark attendance (Teacher/Admin)",
+        "summary": "Mark attendance index details metrics",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["student", "course", "status", "date"],
+                "properties": {
+                  "student": { "type": "string" },
+                  "course": { "type": "string" },
+                  "status": { "type": "string", "enum": ["present", "absent", "late"] },
+                  "date": { "type": "string", "format": "date-time" }
+                }
+              },
               "example": {
-                "course": "64abc...",
-                "student": "64def...",
+                "course": "64abc1234567890123456789",
+                "student": "64def1234567890123456789",
                 "status": "present",
-                "date": "2024-11-01"
+                "date": "2026-05-23T10:00:00Z"
               }
             }
           }
         },
-        "responses": { "201": { "description": "Attendance recorded" } }
+        "responses": {
+          "201": { "description": "Attendance recorded" },
+          "400": { "description": "Validation Error - Invalid status enum or malformed ISO date" }
+        }
       }
     },
     "/announcements": {
@@ -225,19 +922,32 @@
       },
       "post": {
         "tags": ["Announcements"],
-        "summary": "Post an announcement (Admin/Teacher)",
+        "summary": "Post an announcement",
         "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["title", "content"],
+                "properties": {
+                  "title": { "type": "string" },
+                  "content": { "type": "string" },
+                  "targetAudience": { "type": "string", "enum": ["students", "teachers", "all"] }
+                }
+              },
               "example": {
-                "title": "Exam Timetable Released",
-                "content": "The exam timetable for semester 1 is now available.",
+                "title": "Second Semester Registration Deadline",
+                "content": "Ensure all registration tasks are compiled completely within week intervals.",
                 "targetAudience": "students"
               }
             }
           }
         },
-        "responses": { "201": { "description": "Announcement posted" } }
+        "responses": {
+          "201": { "description": "Announcement posted" },
+          "400": { "description": "Validation Error - Title/content missing or inaccurate targetAudience scope value selection" }
+        }
       }
     }
   }

@@ -4,7 +4,14 @@ const Payment = require("../../models/payment");
 
 exports.registerCourses = async (req, res) => {
   try {
-    const { studentId, courseIds, semester, sessionId } = req.body;
+    const { courseIds, semester, sessionId } = req.body;
+
+    let studentId;
+
+    if (req.user.role === 'student') {
+      studentId = req.user._id; // Enforce token identity over body inputs
+    }
+
     const payment = await Payment.findOne({
       student: studentId,
       session: sessionId,
@@ -24,7 +31,7 @@ exports.registerCourses = async (req, res) => {
       return sum + course.units;
     }, 0);
 
-    
+
     if (totalUnits > 24) {
       return res.status(400).json({
         success: false,
@@ -33,7 +40,7 @@ exports.registerCourses = async (req, res) => {
       });
     }
 
-    
+
     const registration = await Registration.create({
       student: studentId,
       session: sessionId,
@@ -91,6 +98,11 @@ exports.getRegistration = async (req, res) => {
         success: false,
         message: 'Registration not found',
       });
+    }
+
+    // Add this check after finding the registration record:
+    if (req.user.role === 'student' && registration.student.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Access denied to this registration profile' });
     }
 
     res.status(200).json({

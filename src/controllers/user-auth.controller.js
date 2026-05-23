@@ -35,7 +35,7 @@ exports.register = async (req, res) => {
         const html = loadEmailTemplate('onboarding', replacements);
 
         //send email
-        //await sendEmail(user[0].email, 'WELCOME TO BROOKS STUDENT PROTAL', html);
+        await sendEmail(user[0].email, 'WELCOME TO BROOKS STUDENT PROTAL', html);
 
         //commit session
         await session.commitTransaction();
