@@ -1,18 +1,22 @@
 const express = require('express');
-
 const router = express.Router();
+const {
+  createStudentProfile,
+  getStudentById,
+  updateStudentProfile,
+  deleteStudentProfile
+} = require('../controllers/student.controller');
 
-const { createStudentProfile, getStudentProfile } = require('../controllers/student.controller');
+const { protect, authorize } = require('../middlewares/auth.middleware');
+const { validateStudent } = require('../middlewares/validate.middleware');
 
-const { protect } = require('../middlewares/auth.middleware');
+// ================= STUDENT SPECIFIC ACTIONS =================
+router.post('/profile', protect, authorize('student'), validateStudent, createStudentProfile);
 
-
-
-// ================= CREATE PROFILE =================
-
-router.post('/profile', protect, createStudentProfile);
-router.get('/profile/:id', protect, getStudentProfile);
-
-
+// ================= ADMINISTRATIVE CONTROL ACTIONS =================
+router.route('/:id')
+  .get(protect, authorize('admin'), getStudentById)
+  .put(protect, authorize('admin'), validateStudent, updateStudentProfile)
+  .delete(protect, authorize('admin'), deleteStudentProfile);
 
 module.exports = router;

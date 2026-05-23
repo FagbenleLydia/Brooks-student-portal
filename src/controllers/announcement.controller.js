@@ -1,11 +1,11 @@
 const Announcement = require('../models/Announcement');
 
-// Roles that can see which audience 
+// Roles that can see which audience
 const audienceMap = {
   student: ['students', 'all'],
   teacher: ['teachers', 'all'],
-  parent:  ['students', 'all'],
-  admin:   ['students', 'teachers', 'all'],
+  parent: ['students', 'all'],
+  admin: ['students', 'teachers', 'all'],
 };
 
 exports.getAnnouncements = async (req, res) => {

@@ -9,9 +9,9 @@ const paymentSchema = new mongoose.Schema(
     },
 
     session: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Session',
       required: true,
-      trim: true,
     },
 
     level: {

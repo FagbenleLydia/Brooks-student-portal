@@ -17,13 +17,14 @@ const {
 // Import existing auth middleware
 
 const { protect } = require('../middlewares/auth.middleware');
+const { validateInitiatePayment } = require('../middlewares/validate.middleware');
 
 
 // ================= PAYMENT ROUTES =================
 
 // Initiate payment
 
-router.post('/initiate', protect, initiatePayment);
+router.post('/initiate', protect, validateInitiatePayment, initiatePayment);
 
 
 

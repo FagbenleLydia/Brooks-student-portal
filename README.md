@@ -6,6 +6,21 @@ A RESTful API for a School Portal Management System built with **Node.js**, **Ex
 
 ---
 
+## Group Members
+
+| # | Name |
+|---|------|
+| 1 | Lydia Fagbenle |
+| 2 | Hassan Hadi |
+| 3 | Jude Ani |
+| 4 | Daniel Anaja |
+| 5 | Kenneth |
+| 6 | Afintinni Aquilla |
+| 7 | Nwachukwu Chibuikem |
+| 8 | Chukwuka Ugbechie |
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -70,34 +85,52 @@ API Docs at: `http://localhost:5000/api-docs`
 ```
 Brooks-Student-Portal/
 ├── src/
-│   ├── controllers/        # Route handlers / business logic
-│   │   ├── auth.controller.js
+│   ├── controllers/        # Route handlers for auth, results, payments, announcements
+│   │   ├── user-auth.controller.js
+│   │   ├── admin-auth.controller.js
 │   │   ├── student.controller.js
-│   │   ├── course.controller.js
-│   │   └── grade.controller.js
+│   │   ├── resultController.js
+│   │   ├── paymentController.js
+│   │   └── announcement.controller.js
 │   ├── routes/             # Express route definitions
-│   │   ├── auth.routes.js
+│   │   ├── user-auth.routes.js
+│   │   ├── admin-auth.routes.js
 │   │   ├── student.routes.js
-│   │   ├── course.routes.js
-│   │   ├── grade.routes.js
-│   │   ├── attendance.routes.js
-│   │   ├── teacher.routes.js
+│   │   ├── resultRoute.js
+│   │   ├── paymentRoutes.js
 │   │   └── announcement.routes.js
-│   ├── services/           # Business logic layer (shared across controllers)
+│   ├── modules/            # Self-contained feature modules (controller + route + service)
+│   │   ├── course/
+│   │   ├── courseRegistration/
+│   │   ├── departments/
+│   │   ├── faculties/
+│   │   ├── level/
+│   │   ├── sessions/
+│   │   └── students/
+│   ├── services/           # Shared business logic
+│   │   └── remitaService.js
 │   ├── models/             # Mongoose schemas
-│   │   ├── user.model.js
-│   │   ├── student.model.js
-│   │   ├── course.model.js
-│   │   ├── grade.model.js
-│   │   ├── attendance.model.js
-│   │   └── announcement.model.js
+│   │   ├── User.js
+│   │   ├── Student.js
+│   │   ├── Course.js
+│   │   ├── Grade.js
+│   │   ├── Attendance.js
+│   │   ├── Announcement.js
+│   │   ├── Session.js
+│   │   ├── Department.js
+│   │   ├── Faculty.js
+│   │   ├── level.js
+│   │   ├── result.js
+│   │   ├── payment.js
+│   │   ├── courseRegistration.js
+│   │   └── Counter.js
 │   ├── middlewares/
 │   │   ├── auth.middleware.js      # JWT protect + role authorize
 │   │   ├── errorHandler.js         # Global error handler
 │   │   └── validate.middleware.js  # Input validation rules
 │   ├── utils/
-│   │   ├── logger.js               # Winston logger
-│   │   └── generateToken.js        # JWT token generator
+│   │   ├── emailTemplate.js        # HTML email template loader
+│   │   └── mailer.js               # Nodemailer email sender
 │   └── app.js              # Express app setup
 ├── server.js               # App entry point
 ├── swagger.json            # API documentation
@@ -127,44 +160,57 @@ Authorization: Bearer <your_token>
 
 ## API Endpoints Summary
 
-### Auth
+### Auth — User
 | Method | Endpoint | Description | Access |
 |--------|----------|-------------|--------|
-| POST | `/api/auth/register` | Register new user | Public |
-| POST | `/api/auth/login` | Login & get token | Public |
-| GET | `/api/auth/me` | Get current user | Private |
+| POST | `/api/auth/user/register` | Register new user | Public |
+| POST | `/api/auth/user/sign-in` | Login & get token | Public |
+| GET | `/api/auth/user/me` | Get current user profile | Private |
+
+### Auth — Admin
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/api/auth/admin/admin-bootstrap` | Create default admin | Public |
+| POST | `/api/auth/admin/create-user` | Admin creates a user | Admin |
 
 ### Students
 | Method | Endpoint | Description | Access |
 |--------|----------|-------------|--------|
-| GET | `/api/students` | List all students | Admin, Teacher |
-| GET | `/api/students/:id` | Get student by ID | Private |
-| PUT | `/api/students/:id` | Update student | Admin |
-| DELETE | `/api/students/:id` | Delete student | Admin |
+| POST | `/api/students/profile` | Create student profile | Private |
 
 ### Courses
 | Method | Endpoint | Description | Access |
 |--------|----------|-------------|--------|
 | GET | `/api/courses` | List all courses | Private |
-| POST | `/api/courses` | Create course | Admin |
-| GET | `/api/courses/:id` | Get course | Private |
-| PUT | `/api/courses/:id` | Update course | Admin, Teacher |
-| DELETE | `/api/courses/:id` | Delete course | Admin |
-| POST | `/api/courses/:id/enroll` | Enroll student | Admin |
+| POST | `/api/courses` | Create course | Private |
+| GET | `/api/courses/:id` | Get course by ID | Private |
+| PUT | `/api/courses/:id` | Update course | Private |
+| DELETE | `/api/courses/:id` | Delete course | Private |
 
-### Grades
+### Course Registration
 | Method | Endpoint | Description | Access |
 |--------|----------|-------------|--------|
-| POST | `/api/grades` | Record grades | Teacher, Admin |
-| GET | `/api/grades/student/:id` | Get student grades + GPA | Private |
-| PUT | `/api/grades/:id` | Update grade | Teacher, Admin |
+| POST | `/api/course-registrations` | Register courses (requires payment) | Private |
+| GET | `/api/course-registrations` | List all registrations | Private |
+| GET | `/api/course-registrations/:id` | Get registration by ID | Private |
+| PUT | `/api/course-registrations/:id` | Update registration | Private |
+| DELETE | `/api/course-registrations/:id` | Delete registration | Private |
 
-### Attendance
+### Results
 | Method | Endpoint | Description | Access |
 |--------|----------|-------------|--------|
-| POST | `/api/attendance` | Mark attendance | Teacher, Admin |
-| GET | `/api/attendance/course/:id` | Get course attendance | Private |
-| GET | `/api/attendance/student/:id` | Get student attendance | Private |
+| POST | `/api/result/uploadresult` | Upload student result | Teacher |
+| GET | `/api/result/getresult` | Get own results | Student, Admin |
+| GET | `/api/result/getcourseresult` | Get results for a course | Teacher, Admin |
+| PUT | `/api/result/updateresult/:id` | Update a result | Teacher |
+| GET | `/api/result/adminsearch` | Search results by student & level | Admin |
+
+### Payments
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| POST | `/api/payments/initiate` | Initiate payment | Private |
+| PUT | `/api/payments/verify/:id` | Verify payment | Private |
+| GET | `/api/payments/status` | Get payment status | Private |
 
 ### Announcements
 | Method | Endpoint | Description | Access |
@@ -172,6 +218,44 @@ Authorization: Bearer <your_token>
 | GET | `/api/announcements` | List announcements | Private |
 | POST | `/api/announcements` | Post announcement | Admin, Teacher |
 | DELETE | `/api/announcements/:id` | Delete announcement | Admin |
+
+### Levels
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| GET | `/api/levels` | List all levels | Private |
+| POST | `/api/levels` | Create level | Admin |
+| GET | `/api/levels/:id` | Get level by ID | Private |
+| PUT | `/api/levels/:id` | Update level | Admin |
+| DELETE | `/api/levels/:id` | Delete level | Admin |
+
+### Sessions
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| GET | `/api/sessions` | List all sessions | Private |
+| POST | `/api/sessions` | Create session | Private |
+| GET | `/api/sessions/current` | Get current session | Private |
+| GET | `/api/sessions/:id` | Get session by ID | Private |
+| PUT | `/api/sessions/:id` | Update session | Private |
+| PATCH | `/api/sessions/:id/set-current` | Set as current session | Admin |
+| DELETE | `/api/sessions/:id` | Delete session | Private |
+
+### Departments
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| GET | `/api/departments` | List all departments | Private |
+| POST | `/api/departments` | Create department | Private |
+| GET | `/api/departments/:id` | Get department by ID | Private |
+| PUT | `/api/departments/:id` | Update department | Private |
+| DELETE | `/api/departments/:id` | Delete department | Private |
+
+### Faculties
+| Method | Endpoint | Description | Access |
+|--------|----------|-------------|--------|
+| GET | `/api/faculties` | List all faculties | Private |
+| POST | `/api/faculties` | Create faculty | Private |
+| GET | `/api/faculties/:id` | Get faculty by ID | Private |
+| PUT | `/api/faculties/:id` | Update faculty | Private |
+| DELETE | `/api/faculties/:id` | Delete faculty | Private |
 
 ---
 
