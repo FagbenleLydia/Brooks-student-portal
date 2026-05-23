@@ -152,6 +152,48 @@ const validateSession = [
   handleValidationErrors,
 ];
 
+const validateUploadResult = [
+  body('studentID')
+    .isMongoId()
+    .withMessage('studentID must be a valid MongoDB ObjectId reference to a Student'),
+  body('course')
+    .isMongoId()
+    .withMessage('course must be a valid MongoDB ObjectId reference to a Course'),
+  body('session')
+    .isMongoId()
+    .withMessage('session must be a valid MongoDB ObjectId reference to a Session'),
+  body('level')
+    .isIn(['100', '200', '300', '400', '500', '600', 'Spill-Over'])
+    .withMessage('Invalid academic level state selection'),
+  body('semester')
+    .isIn(['first', 'second'])
+    .withMessage('Semester parameter must be either first or second'),
+  body('score')
+    .isFloat({ min: 0, max: 100 })
+    .withMessage('Score must be a valid numeric index between 0 and 100'),
+  handleValidationErrors,
+];
+
+const validateUpdateResultScore = [
+  body('score')
+    .isFloat({ min: 0, max: 100 })
+    .withMessage('Score must be a valid numeric index between 0 and 100'),
+  handleValidationErrors,
+];
+
+const validateInitiatePayment = [
+  body('session')
+    .isMongoId()
+    .withMessage('session must be a valid MongoDB ObjectId reference'),
+  body('level')
+    .notEmpty()
+    .withMessage('Academic level tracking string is required'),
+  body('amount')
+    .isNumeric()
+    .withMessage('Payment amount must be a numeric value'),
+  handleValidationErrors,
+];
+
 module.exports = {
   validateCreateUser,
   validateRegister,
@@ -166,4 +208,7 @@ module.exports = {
   validateCourseRegistration,
   validateUpdateCourseRegistration,
   validateSession,
+  validateUploadResult,
+  validateUpdateResultScore,
+  validateInitiatePayment
 };
