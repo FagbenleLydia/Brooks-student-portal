@@ -2,10 +2,25 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const morgan = require("morgan");
+const errorHandler = require("./middlewares/errorHandler");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("../swagger.json");
+const departmentRoutes = require("./routes/department.routes");
+const facultyRoutes = require("./routes/faculty.routes");
+const courseRoutes = require("./routes/course.routes");
+const levelRoutes = require('./routes/level.route');
+const sessionRoutes = require('./routes/session.routes');
+const courseRegistrationRoutes = require('./routes/courseRegistration.route');
+const paymentRoutes = require('./routes/paymentRoutes');
 
+const {protect} = require('./middlewares/auth.middleware');
+
+
+const dotenv = require('dotenv');
+
+dotenv.config();
 const app = express();
+
 
 // Middlewares
 app.use(cors());
@@ -17,8 +32,20 @@ app.use(morgan("dev"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Routes
-// Register your routes here as you build them
-// e.g. app.use('/api/auth', require('./routes/auth.routes'));
+app.use("/api/departments", departmentRoutes);
+app.use("/api/faculties", facultyRoutes);
+app.use("/api/courses", courseRoutes);
+app.use('/api/levels', levelRoutes);
+app.use('/api/sessions', sessionRoutes);
+app.use('/api/course-registrations', courseRegistrationRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/auth/admin', require('./routes/admin-auth.routes'));
+app.use('/api/auth/user', require('./routes/user-auth.routes'));
+app.use('/api/announcements', require('./routes/announcement.routes'));
+app.use('/api/result', require('./routes/resultRoute'));
+app.use('/api/students', require('./routes/student.routes'));
+app.use('/api/grades', require('./routes/grade.routes'));
+app.use('/api/attendance', require('./routes/attendance.routes'));
 
 // Health Check
 app.get("/", (req, res) => {
@@ -35,5 +62,7 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
+
+app.use(errorHandler);
 
 module.exports = { app, connectDB };

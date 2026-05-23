@@ -1,0 +1,13 @@
+{
+  "id": "b1c2d3e4-f5a6-7890-bcde-f1234567890a",
+  "name": "Brooks Student Portal",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "enabled": true
+    }
+  ],
+  "timestamp": 0,
+  "synced": false
+}
