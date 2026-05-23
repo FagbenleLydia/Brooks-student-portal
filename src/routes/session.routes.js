@@ -15,7 +15,7 @@ const { validateSession } = require('../middlewares/validate.middleware');
 
 router.post('/', protect, authorize('admin'), validateSession, createSession);
 
-router.get('/', getSessions);
+router.get('/', protect, getSessions);
 
 router.get('/current', protect, getCurrentSession);
 

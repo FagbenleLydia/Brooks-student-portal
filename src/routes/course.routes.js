@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { validateFaculty, validateCourse } = require("../middlewares/validate.middleware");
+const { validateCourse } = require("../middlewares/validate.middleware");
 
 const {
   createCourse,

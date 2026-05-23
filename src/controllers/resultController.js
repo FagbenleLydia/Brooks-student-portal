@@ -1,8 +1,8 @@
 const Result = require('../models/result');
 const User = require('../models/User');
 const Course = require('../models/Course');
-const Student = require('../models/student');
-const { findOne } = require('../models/Department');
+const Student = require('../models/Student');
+const Session = require('../models/Session');
 
 function calculateGrade(score) {
     if (score >= 70) return 'A';
@@ -33,14 +33,20 @@ exports.postResult = async (req,res) => {
             return res.status(400).json({error: 'Invalid Semester'});
         }
 
-        if ((score < 0 || score > 100) || isNaN(score)){
+        if (isNaN(score) || score < 0 || score > 100){
             return res.status(400).json({error: 'Invalid Score'})
         }
 
-        //checking if the student registered for a particular course
-        const validateStudent = await User.findOne({authUserId: studentID});
-        if(!validateStudent){
+        // Find the user by their authUserId
+        const studentUser = await User.findOne({authUserId: studentID});
+        if(!studentUser){
             return res.status(404).json({error: 'Student does not exist'});
+        }
+
+        // Find the student profile linked to that user
+        const studentDoc = await Student.findOne({user: studentUser._id});
+        if(!studentDoc){
+            return res.status(404).json({error: 'Student profile not found'});
         }
 
         const validateCourse = await Course.findOne({courseCode: course});
@@ -48,25 +54,30 @@ exports.postResult = async (req,res) => {
             return res.status(404).json({error: 'Course does not exist'});
         }
 
-        if(!validateCourse.enrolledStudents.includes(studentID)){
+        // enrolledStudents holds User ObjectIds — compare correctly
+        const isEnrolled = validateCourse.enrolledStudents.some(id => id.equals(studentUser._id));
+        if(!isEnrolled){
             return res.status(404).json({error: 'Student not enrolled in course'})
         }
 
-        //Teacher server verification
-        const teacher = req.user.id
+        // Get the active session
+        const currentSession = await Session.findOne({isCurrent: true});
+        if(!currentSession){
+            return res.status(404).json({error: 'No active session found. Please set a current session.'});
+        }
 
-        //calculate grade from score
+        const teacher = req.user._id;
         const grade = calculateGrade(score);
 
-        //Save Result
         const result = await Result.create({
-            StudentId: studentID,
-            Level: level,
-            Course: course,
-            Lecturer: teacher,
-            Semester: semester,
-            Score: score,
-            Grade: grade
+            studentID: studentDoc._id,
+            course: validateCourse._id,
+            teacher,
+            session: currentSession._id,
+            level,
+            semester,
+            score,
+            grade
         });
 
         return res.status(200).json({
@@ -110,7 +121,7 @@ exports.getStudentResult = async (req,res) =>{
 
 exports.getCourseResults = async (req,res) => {
     try{
-        const{courseCode,level,semester,department} = req.query;
+        const{courseCode,level,semester} = req.query;
 
         const teacherId = req.user.id;
 
@@ -123,10 +134,8 @@ exports.getCourseResults = async (req,res) => {
         const results = await Result.find({
             course: foundCourse._id,
             level,
-            department,
             semester
-
-        }).select(['studentID score grade'])
+        }).select('studentID score grade')
 
         if(results.length===0){
             return res.status(404).json({error: 'No result found'})

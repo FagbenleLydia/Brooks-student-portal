@@ -1,6 +1,5 @@
 const express = require('express');
 const router = express.Router();
-const { validateFaculty } = require("../middlewares/validate.middleware");
 
 const {
   createLevel,

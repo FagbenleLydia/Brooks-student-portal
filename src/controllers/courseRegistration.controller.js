@@ -101,7 +101,7 @@ exports.getRegistration = async (req, res) => {
     }
 
     // Add this check after finding the registration record:
-    if (req.user.role === 'student' && registration.student.toString() !== req.user._id.toString()) {
+    if (req.user.role === 'student' && registration.student._id.toString() !== req.user._id.toString()) {
       return res.status(403).json({ success: false, message: 'Access denied to this registration profile' });
     }
 

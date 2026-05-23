@@ -62,8 +62,8 @@ const validateCourse = [
   body('courseCode').trim().notEmpty().withMessage('Course code is required'),
   body('department').trim().notEmpty().withMessage('Department ID is required'),
   body('semester').isIn(['first', 'second']).withMessage('Semester must be first or second'),
-  body('academicYear').notEmpty().withMessage('Academic year is required'),
-  body('level').notEmpty().withMessage('level is required'),
+  body('units').isInt({ min: 1, max: 6 }).withMessage('Units must be between 1 and 6'),
+  body('level').notEmpty().withMessage('Level is required'),
   handleValidationErrors,
 ];
 
@@ -141,10 +141,18 @@ const validateUpdateCourseRegistration = [
 ];
 
 const validateSession = [
-  body('name')
+  body('academicYear')
     .trim()
     .notEmpty()
-    .withMessage('Academic session name is required (e.g., 2025/2026)'),
+    .withMessage('Academic year is required (e.g., 2025/2026)'),
+  body('startDate')
+    .notEmpty()
+    .isISO8601()
+    .withMessage('Start date is required and must be a valid date'),
+  body('endDate')
+    .notEmpty()
+    .isISO8601()
+    .withMessage('End date is required and must be a valid date'),
   body('isCurrent')
     .optional()
     .isBoolean()
