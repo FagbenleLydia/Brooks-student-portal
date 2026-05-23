@@ -1,7 +1,7 @@
 const Result = require('../models/result');
 const User = require('../models/User');
 const Course = require('../models/Course');
-const Student = require('../models/Student');
+const Student = require('../models/student');
 const Session = require('../models/Session');
 
 function calculateGrade(score) {
