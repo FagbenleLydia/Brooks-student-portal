@@ -2,23 +2,16 @@ const express = require('express');
 
 const router = express.Router();
 
-const {
+const { createStudentProfile, getStudentProfile } = require('../controllers/student.controller');
 
-  createStudentProfile,
-
-} = require('../controllers/student.controller');
-
-const {
-
-  protect,
-
-} = require('../middlewares/auth.middleware');
+const { protect } = require('../middlewares/auth.middleware');
 
 
 
 // ================= CREATE PROFILE =================
 
 router.post('/profile', protect, createStudentProfile);
+router.get('/profile/:id', protect, getStudentProfile);
 
 
 
