@@ -6,6 +6,21 @@ A RESTful API for a School Portal Management System built with **Node.js**, **Ex
 
 ---
 
+## Group Members
+
+| # | Name |
+|---|------|
+| 1 | Lydia Fagbenle |
+| 2 | Hassan Hadi |
+| 3 | Jude Ani |
+| 4 | Daniel Anaja |
+| 5 | Kenneth |
+| 6 | Afintinni Aquilla |
+| 7 | Nwachukwu Chibuikem |
+| 8 | Chukwuka Ugbechie |
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
