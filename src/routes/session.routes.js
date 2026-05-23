@@ -9,9 +9,9 @@ const {
   updateSession,
   setCurrentSession,
   deleteSession,
-} = require('./session.controller');
-const { protect, authorize } = require('../../middlewares/auth.middleware');
-const { validateSession } = require('../../middlewares/validate.middleware');
+} = require('../controllers/session.controller');
+const { protect, authorize } = require('../middlewares/auth.middleware');
+const { validateSession } = require('../middlewares/validate.middleware');
 
 router.post('/', protect, authorize('admin'), validateSession, createSession);
 

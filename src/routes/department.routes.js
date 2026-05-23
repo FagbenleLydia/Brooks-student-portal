@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { validateDepartment } = require("../../middlewares/validate.middleware");
+const { validateDepartment } = require("../middlewares/validate.middleware");
 
 const {
   createDepartment,
@@ -8,8 +8,8 @@ const {
   getDepartment,
   updateDepartment,
   deleteDepartment,
-} = require("./department.controller");
-const { protect, authorize } = require("../../middlewares/auth.middleware");
+} = require("../controllers/department.controller");
+const { protect, authorize } = require("../middlewares/auth.middleware");
 
 
 router.post("/", protect, authorize('admin'), validateDepartment, createDepartment);

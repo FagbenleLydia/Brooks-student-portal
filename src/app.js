@@ -5,12 +5,12 @@ const morgan = require("morgan");
 const errorHandler = require("./middlewares/errorHandler");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("../swagger.json");
-const departmentRoutes = require("./modules/departments/department.routes");
-const facultyRoutes = require("./modules/faculties/faculty.routes");
-const courseRoutes = require("./modules/course/course.routes");
-const levelRoutes = require('./modules/level/level.route');
-const sessionRoutes = require('./modules/sessions/session.routes');
-const courseRegistrationRoutes = require('./modules/courseRegistration/courseRegistration.route');
+const departmentRoutes = require("./routes/department.routes");
+const facultyRoutes = require("./routes/faculty.routes");
+const courseRoutes = require("./routes/course.routes");
+const levelRoutes = require('./routes/level.route');
+const sessionRoutes = require('./routes/session.routes');
+const courseRegistrationRoutes = require('./routes/courseRegistration.route');
 const paymentRoutes = require('./routes/paymentRoutes');
 
 const {protect} = require('./middlewares/auth.middleware');
@@ -32,7 +32,6 @@ app.use(morgan("dev"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Routes
-// Module routes
 app.use("/api/departments", departmentRoutes);
 app.use("/api/faculties", facultyRoutes);
 app.use("/api/courses", courseRoutes);
@@ -41,7 +40,6 @@ app.use('/api/sessions', sessionRoutes);
 app.use('/api/course-registrations', courseRegistrationRoutes);
 app.use('/api/payments', paymentRoutes);
 
-// All module routes registered above
 app.use('/api/auth/admin', require('./routes/admin-auth.routes'));
 app.use('/api/auth/user', require('./routes/user-auth.routes'));
 app.use('/api/announcements', require('./routes/announcement.routes'));

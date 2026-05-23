@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { validateFaculty, validateCourse } = require("../../middlewares/validate.middleware");
+const { validateFaculty, validateCourse } = require("../middlewares/validate.middleware");
 
 const {
   createCourse,
@@ -8,8 +8,8 @@ const {
   getCourse,
   updateCourse,
   deleteCourse,
-} = require('./course.controller');
-const { protect, authorize } = require('../../middlewares/auth.middleware');
+} = require('../controllers/course.controller');
+const { protect, authorize } = require('../middlewares/auth.middleware');
 
 
 router.post('/', protect, authorize('teacher'), validateCourse, createCourse);

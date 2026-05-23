@@ -7,9 +7,9 @@ const {
   getRegistration,
   updateRegistration,
   deleteRegistration,
-} = require('./courseRegistration.controller');
-const { protect, authorize } = require('../../middlewares/auth.middleware');
-const { validateCourseRegistration, validateUpdateCourseRegistration } = require('../../middlewares/validate.middleware');
+} = require('../controllers/courseRegistration.controller');
+const { protect, authorize } = require('../middlewares/auth.middleware');
+const { validateCourseRegistration, validateUpdateCourseRegistration } = require('../middlewares/validate.middleware');
 
 router.post('/', authorize('student', 'admin'), protect, validateCourseRegistration, registerCourses);
 

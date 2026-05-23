@@ -1,12 +1,12 @@
-const Department = require("../../models/Department");
+const Faculty = require("../models/Faculty");
 
-exports.createDepartment = async (req, res) => {
+exports.createFaculty = async (req, res) => {
   try {
-    const department = await Department.create(req.body);
+    const faculty = await Faculty.create(req.body);
 
     res.status(201).json({
       success: true,
-      data: department,
+      data: faculty,
     });
   } catch (error) {
     const statusCode = error.name === 'ValidationError' ? 400 : 500;
@@ -18,13 +18,13 @@ exports.createDepartment = async (req, res) => {
   }
 };
 
-exports.getDepartments = async (req, res) => {
+exports.getFaculties = async (req, res) => {
   try {
-    const departments = await Department.find();
+    const faculties = await Faculty.find();
 
     res.status(200).json({
       success: true,
-      data: departments,
+      data: faculties,
     });
   } catch (error) {
     res.status(500).json({
@@ -34,20 +34,20 @@ exports.getDepartments = async (req, res) => {
   }
 };
 
-exports.getDepartment = async (req, res) => {
+exports.getFacultyById = async (req, res) => {
   try {
-    const department = await Department.findById(req.params.id);
+    const faculty = await Faculty.findById(req.params.id);
 
-    if (!department) {
+    if (!faculty) {
       return res.status(404).json({
         success: false,
-        message: "Department not found",
+        message: "Faculty not found",
       });
     }
 
     res.status(200).json({
       success: true,
-      data: department,
+      data: faculty,
     });
   } catch (error) {
     res.status(500).json({
@@ -57,24 +57,24 @@ exports.getDepartment = async (req, res) => {
   }
 };
 
-exports.updateDepartment = async (req, res) => {
+exports.updateFaculty = async (req, res) => {
   try {
-    const department = await Department.findByIdAndUpdate(
+    const faculty = await Faculty.findByIdAndUpdate(
       req.params.id,
       req.body,
       { new: true, runValidators: true }
     );
 
-    if (!department) {
+    if (!faculty) {
       return res.status(404).json({
         success: false,
-        message: "Department not found",
+        message: "Faculty not found",
       });
     }
 
     res.status(200).json({
       success: true,
-      data: department,
+      data: faculty,
     });
   } catch (error) {
     const statusCode = error.name === 'ValidationError' ? 400 : 500;
@@ -86,20 +86,20 @@ exports.updateDepartment = async (req, res) => {
   }
 };
 
-exports.deleteDepartment = async (req, res) => {
+exports.deleteFaculty = async (req, res) => {
   try {
-    const department = await Department.findByIdAndDelete(req.params.id);
+    const faculty = await Faculty.findByIdAndDelete(req.params.id);
 
-    if (!department) {
+    if (!faculty) {
       return res.status(404).json({
         success: false,
-        message: "Department not found",
+        message: "Faculty not found",
       });
     }
 
     res.status(200).json({
       success: true,
-      message: "Department deleted successfully",
+      message: "Faculty deleted successfully",
     });
   } catch (error) {
     res.status(500).json({

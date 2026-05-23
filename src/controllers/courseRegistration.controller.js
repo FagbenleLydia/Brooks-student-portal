@@ -1,6 +1,6 @@
-const Course = require("../../models/Course");
-const Registration = require("../../models/courseRegistration");
-const Payment = require("../../models/payment");
+const Course = require("../models/Course");
+const Registration = require("../models/courseRegistration");
+const Payment = require("../models/payment");
 
 exports.registerCourses = async (req, res) => {
   try {

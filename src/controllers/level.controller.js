@@ -1,16 +1,13 @@
-const Course = require("../../models/Course");
+const Level = require('../models/level');
 
 
-exports.createCourse = async (req, res) => {
+exports.createLevel = async (req, res) => {
   try {
-    const course = await Course.create({
-      ...req.body,
-      teacher: req.user._id
-    });
+    const level = await Level.create(req.body);
 
     res.status(201).json({
       success: true,
-      data: course,
+      data: level,
     });
   } catch (error) {
     res.status(400).json({
@@ -20,18 +17,15 @@ exports.createCourse = async (req, res) => {
   }
 };
 
-exports.getCourses = async (req, res) => {
+
+exports.getLevels = async (req, res) => {
   try {
-    const courses = await Course.find()
-      .populate('department')
-      .populate('level')
-      .populate('teacher')
-      .populate('enrolledStudents');
+    const levels = await Level.find().sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,
-      count: courses.length,
-      data: courses,
+      count: levels.length,
+      data: levels,
     });
   } catch (error) {
     res.status(500).json({
@@ -41,24 +35,21 @@ exports.getCourses = async (req, res) => {
   }
 };
 
-exports.getCourse = async (req, res) => {
-  try {
-    const course = await Course.findById(req.params.id)
-      .populate('department')
-      .populate('level')
-      .populate('teacher')
-      .populate('enrolledStudents');
 
-    if (!course) {
+exports.getLevel = async (req, res) => {
+  try {
+    const level = await Level.findById(req.params.id);
+
+    if (!level) {
       return res.status(404).json({
         success: false,
-        message: 'Course not found',
+        message: 'Level not found',
       });
     }
 
     res.status(200).json({
       success: true,
-      data: course,
+      data: level,
     });
   } catch (error) {
     res.status(500).json({
@@ -68,30 +59,28 @@ exports.getCourse = async (req, res) => {
   }
 };
 
-exports.updateCourse = async (req, res) => {
+
+exports.updateLevel = async (req, res) => {
   try {
-    const course = await Course.findByIdAndUpdate(
+    const level = await Level.findByIdAndUpdate(
       req.params.id,
       req.body,
       {
         new: true,
         runValidators: true,
       }
-    )
-      .populate('department')
-      .populate('level')
-      .populate('teacher');
+    );
 
-    if (!course) {
+    if (!level) {
       return res.status(404).json({
         success: false,
-        message: 'Course not found',
+        message: 'Level not found',
       });
     }
 
     res.status(200).json({
       success: true,
-      data: course,
+      data: level,
     });
   } catch (error) {
     res.status(400).json({
@@ -101,20 +90,21 @@ exports.updateCourse = async (req, res) => {
   }
 };
 
-exports.deleteCourse = async (req, res) => {
-  try {
-    const course = await Course.findByIdAndDelete(req.params.id);
 
-    if (!course) {
+exports.deleteLevel = async (req, res) => {
+  try {
+    const level = await Level.findByIdAndDelete(req.params.id);
+
+    if (!level) {
       return res.status(404).json({
         success: false,
-        message: 'Course not found',
+        message: 'Level not found',
       });
     }
 
     res.status(200).json({
       success: true,
-      message: 'Course deleted successfully',
+      message: 'Level deleted successfully',
     });
   } catch (error) {
     res.status(500).json({
