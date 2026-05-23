@@ -1244,6 +1244,358 @@
           "500": { "description": "Relational query aggregation exception structural error routine tracking output logs" }
         }
       }
+    },
+    "/attendance": {
+      "post": {
+        "tags": ["Attendance Module"],
+        "summary": "Log student attendance index state record",
+        "description": "Inserts a structured session tracking record for a student on a specified calendar day matrix window. Restricted to Teachers and Admins.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["student", "course", "status", "date"],
+                "properties": {
+                  "student": { "type": "string", "description": "Valid Student/User Document ObjectId String", "example": "651c3f191f1a2c3d4e5f6a22" },
+                  "course": { "type": "string", "description": "Valid Course Document ObjectId String", "example": "651c3f191f1a2c3d4e5f6e55" },
+                  "status": { "type": "string", "enum": ["present", "absent", "late"], "example": "present" },
+                  "date": { "type": "string", "format": "date-time", "description": "ISO8601 extended calendar tracking snapshot timestamp payload", "example": "2026-05-23T14:30:00.000Z" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Attendance status indicator captured successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/Attendance" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation constraint mismatch or composite identity duplicate tracking index conflict error status", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorTemplate" } } } },
+          "500": { "description": "Internal cluster pipeline operational handling failures" }
+        }
+      }
+    },
+    "/attendance/course/{id}": {
+      "get": {
+        "tags": ["Attendance Module"],
+        "summary": "Fetch attendance history maps tied to a selected course context",
+        "description": "Queries historical registry logs matching target tracking records and flattens associated student identification attributes. Restricted to Teachers and Admins.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target unique Course identity reference ObjectId identifier" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Course tracking history rosters fetched and populated completely",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "count": { "type": "integer", "example": 45 },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          { "$ref": "#/components/schemas/Attendance" },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "student": {
+                                "type": "object",
+                                "properties": {
+                                  "_id": { "type": "string", "example": "651c3f191f1a2c3d4e5f6a22" },
+                                  "firstName": { "type": "string", "example": "Jude" },
+                                  "lastName": { "type": "string", "example": "Phoenix" },
+                                  "authUserId": { "type": "string", "example": "usr_99217a1b" }
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Database data interface engine query tracking failures" }
+        }
+      }
+    },
+    "/attendance/student/{id}": {
+      "get": {
+        "tags": ["Attendance Module"],
+        "summary": "Fetch individual student timeline records",
+        "description": "Pulls personal log segments showing date tracking indexes alongside course contextual maps for evaluations.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target Student unique User schema identity ObjectId mapping reference key" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Individual attendance tracking vectors compiled successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "count": { "type": "integer", "example": 12 },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          { "$ref": "#/components/schemas/Attendance" },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "course": {
+                                "type": "object",
+                                "properties": {
+                                  "_id": { "type": "string", "example": "651c3f191f1a2c3d4e5f6e55" },
+                                  "title": { "type": "string", "example": "Digital Signal Processing" },
+                                  "courseCode": { "type": "string", "example": "EEE401" }
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": { "description": "Internal database exception handling tracing routines" }
+        }
+      }
+    },
+    "/attendance/{id}": {
+      "delete": {
+        "tags": ["Attendance Module"],
+        "summary": "Purge an attendance log baseline reference record",
+        "description": "Deletes a targeted attendance entry sequence matching the exact parameter key. Restricted strictly to Admins.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target active tracking Attendance item identity identifier context ID" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Record tracking block safely removed out of configuration tables",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Attendance record deleted successfully" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Target log block trace mapping locator missing sequence results", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorTemplate" } } } },
+          "500": { "description": "Internal transaction execution pipeline exceptions block" }
+        }
+      }
+    },
+    "/grades": {
+      "post": {
+        "tags": ["Grades Processing Module"],
+        "summary": "Initialize and record academic grade components profile records",
+        "description": "Evaluates raw continuous assessment matrices, triggers structural totalScore computation and gradePoint conversion hook logic inside Mongoose middleware stacks, and logs performance elements. Restricted to Teachers and Admins.",
+        "security": [{ "BearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["student", "course", "scores", "semester", "academicYear"],
+                "properties": {
+                  "student": { "type": "string", "description": "Valid Student/User Document ObjectId reference", "example": "651c3f191f1a2c3d4e5f6a22" },
+                  "course": { "type": "string", "description": "Valid Course Document ObjectId reference", "example": "651c3f191f1a2c3d4e5f6e55" },
+                  "scores": {
+                    "type": "object",
+                    "required": ["assignment", "midterm", "exam"],
+                    "properties": {
+                      "assignment": { "type": "number", "minimum": 0, "maximum": 30, "example": 22.5 },
+                      "midterm": { "type": "number", "minimum": 0, "maximum": 30, "example": 25 },
+                      "exam": { "type": "number", "minimum": 0, "maximum": 40, "example": 32 }
+                    }
+                  },
+                  "semester": { "type": "string", "enum": ["first", "second"], "example": "first" },
+                  "academicYear": { "type": "string", "example": "2025/2026" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Evaluation profile instance registered and tracked into academic storage indices successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/Grade" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Validation constraint block failure or conflict detection tracing to an already recorded entity reference", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorTemplate" } } } },
+          "500": { "description": "Database storage driver handling operational exception logs" }
+        }
+      }
+    },
+    "/grades/student/{id}": {
+      "get": {
+        "tags": ["Grades Processing Module"],
+        "summary": "Fetch student academic grade sheets alongside automated GPA calculations",
+        "description": "Aggregates matching grade document configurations, handles real-time unit weighted calculation maps, and generates GPA snapshots.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target unique Student document tracking index identifier ObjectId string value" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Student grade sheet metrics compiled and weighted cleanly",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "gpa": { "type": "number", "format": "float", "example": 4.38 },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "allOf": [
+                          { "$ref": "#/components/schemas/Grade" },
+                          {
+                            "type": "object",
+                            "properties": {
+                              "course": {
+                                "type": "object",
+                                "properties": {
+                                  "_id": { "type": "string", "example": "651c3f191f1a2c3d4e5f6e55" },
+                                  "title": { "type": "string", "example": "Digital Signal Processing" },
+                                  "courseCode": { "type": "string", "example": "EEE401" },
+                                  "units": { "type": "integer", "example": 4 }
+                                }
+                              }
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "No tracked continuous evaluation structures linked to this identity parameter", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorTemplate" } } } },
+          "500": { "description": "Data relational structure interface engine operational failures" }
+        }
+      }
+    },
+    "/grades/{id}": {
+      "put": {
+        "tags": ["Grades Processing Module"],
+        "summary": "Modify numeric score metrics on an active grade tracking reference configuration sheet",
+        "description": "Enables authorized instructors to alter assignment, midterm, or exam marks inside document fields. Triggers internal Mongoose computation lifecycles upon updates. Restricted to Teachers and Admins.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target baseline Grade document record identifier value mapping" }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["scores"],
+                "properties": {
+                  "scores": {
+                    "type": "object",
+                    "required": ["assignment", "midterm", "exam"],
+                    "properties": {
+                      "assignment": { "type": "number", "minimum": 0, "maximum": 30, "example": 28 },
+                      "midterm": { "type": "number", "minimum": 0, "maximum": 30, "example": 26 },
+                      "exam": { "type": "number", "minimum": 0, "maximum": 40, "example": 38 }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Grade metrics modified and recalculated smoothly",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/Grade" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Target grade schema lookup trace return blank missing values", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorTemplate" } } } },
+          "500": { "description": "Runtime transactional tracking matrix execution channel failure block" }
+        }
+      },
+      "delete": {
+        "tags": ["Grades Processing Module"],
+        "summary": "Delete a structural grade performance tracking entity record block completely",
+        "description": "Removes a specific grade record out of active application data clusters. Restricted strictly to Admins.",
+        "security": [{ "BearerAuth": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" }, "description": "Target Grade object tracker instance unique identity reference parameter ID" }
+        ],
+        "responses": {
+          "200": {
+            "description": "Performance tracking instance cleanly detached and deleted out of system logs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Grade deleted successfully" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "description": "Target database ledger index trace parameters mapping lookup missing match records", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorTemplate" } } } },
+          "500": { "description": "Application architecture operational infrastructure driver exception log block mapping" }
+        }
+      }
     }
   }
 }
