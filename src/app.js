@@ -32,20 +32,7 @@ app.use(morgan("dev"));
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Routes
-app.use("/api/departments", departmentRoutes);
-app.use("/api/faculties", facultyRoutes);
-app.use("/api/courses", courseRoutes);
-app.use('/api/levels', levelRoutes);
-app.use('/api/sessions', sessionRoutes);
-app.use('/api/course-registrations', courseRegistrationRoutes);
-app.use('/api/payments', paymentRoutes);
-
-app.use('/api/auth/admin', require('./routes/admin-auth.routes'));
-app.use('/api/auth/user', require('./routes/user-auth.routes'));
 app.use('/api/announcements', require('./routes/announcement.routes'));
-app.use('/api/result', require('./routes/resultRoute'));
-app.use('/api/payments', require('./routes/paymentRoutes'));
-app.use('/api/students', require('./routes/student.routes'));
 
 // Health Check
 app.get("/", (req, res) => {

@@ -1,0 +1,58 @@
+{
+  "info": {
+    "name": "Brooks Student Portal - Announcements",
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "description": "Postman collection for testing announcement endpoints.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Get Announcements",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/announcements"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Announcement",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Exam Timetable Released\",\n  \"content\": \"The exam timetable for semester 1 is now available.\",\n  \"targetAudience\": \"students\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/announcements"
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Announcement",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/announcements/:id"
+        }
+      },
+      "response": []
+    }
+  ]
+}
